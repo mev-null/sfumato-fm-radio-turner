@@ -1,0 +1,66 @@
+# --- Python General ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# --- uv / Virtual Environment ---
+.venv/
+env/
+venv/
+ENV/
+
+# --- Jupyter Notebooks ---
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# --- FPGA / Gowin EDA (Tang Nano) ---
+# 合成・配置配線の中間ファイル
+impl/
+temp/
+# 生成されたビットストリーム
+*.fs
+*.bin
+*.pos
+*.ph
+*.ts
+*.o
+*.d
+
+# --- Simulation & Audio Artifacts ---
+# 波形ダンプファイル
+*.vcd
+*.fst
+*.wlf
+# 生成された音声ファイル
+*.wav
+*.mp3
+*.raw
+# シミュレーションログ
+sim.log
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
