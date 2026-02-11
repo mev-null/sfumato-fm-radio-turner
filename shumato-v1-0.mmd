@@ -1,0 +1,109 @@
+graph LR
+    %% --- クラス定義 ---
+    classDef default fill:#1a237e,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef hw fill:#333,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef verilog fill:#f57f17,stroke:#ffca28,stroke-width:2px,color:#000;
+    classDef cpp fill:#1b5e20,stroke:#66bb6a,stroke-width:2px,color:#fff;
+    classDef bus fill:none,stroke:#fff,stroke-dasharray: 5 5,color:#fff;
+    
+    classDef label fill:none,stroke:none,color:#fff,font-size:18px,font-weight:bold;
+
+    %% --- 外部ハードウェア ---
+    subgraph Inputs
+        direction TB
+        %% ラベルノード
+        Lb_In["Inputs"]:::label
+        
+        Antenna(Loop Antenna):::hw
+        Mic(MEMS Mic):::hw
+        ADC[ADC: AD9226]:::hw
+        
+        %% 配置調整 (ラベルの下にアンテナ)
+        Lb_In ~~~ Antenna
+    end
+
+    %% --- FPGAシステム ---
+    subgraph FPGA
+        direction TB
+        %% FPGA全体のラベル
+        Lb_FPGA["Tang Nano 9K: System Architecture"]:::label
+        
+        %% 上段: 知能
+        subgraph Brain
+            direction LR
+            %% ラベルを左端に配置
+            Lb_Brain["Context Awareness Engine"]:::label
+            
+            I2S_In[I2S Rx]:::cpp
+            Feat[FFT / Feature]:::cpp
+            AI[[Edge AI Inference]]:::cpp
+            Control[Parameter Controller]:::cpp
+            
+            %% ラベル -> 最初の要素 (非表示リンク)
+            Lb_Brain ~~~ I2S_In
+        end
+
+        %% 下段: 信号処理
+        subgraph Muscle
+            direction LR
+            %% ラベルを左端に配置
+            Lb_Muscle["Adaptive Audio Path"]:::label
+            
+            Driver[ADC Driver]:::verilog
+            DDC[DDC / Demod]:::verilog
+            
+            subgraph Sfumato
+                direction LR
+                %% ラベル
+                Lb_Sfu["Sfumato DSP Core"]:::label
+                
+                AdaptiveEQ[Adaptive EQ]:::verilog
+                Comp[Compressor]:::verilog
+                Reverb[Ambience]:::verilog
+                
+                Lb_Sfu ~~~ AdaptiveEQ
+            end
+            
+            I2S_Out[I2S Tx]:::verilog
+            
+            %% ラベル -> 最初の要素
+            Lb_Muscle ~~~ Driver
+        end
+
+        %% バス
+        RegBus((Register Bus)):::bus
+        
+        %% FPGAラベルと中身の位置関係
+        Lb_FPGA ~~~ Brain
+    end
+
+    %% --- 出力 ---
+    subgraph Outputs
+        direction TB
+        Lb_Out["Outputs"]:::label
+        DAC[DAC / Amp]:::hw
+        Lb_Out ~~~ DAC
+    end
+
+    %% --- 接続 ---
+    Antenna --> ADC
+    ADC --> Driver
+    Driver --> DDC
+    DDC --> AdaptiveEQ
+    AdaptiveEQ --> Comp
+    Comp --> Reverb
+    Reverb --> I2S_Out
+    I2S_Out --> DAC
+
+    Mic --> I2S_In
+    I2S_In --> Feat
+    Feat --> AI
+    AI --> Control
+    Control -- Morphing --> RegBus
+    
+    RegBus -.-> AdaptiveEQ
+    RegBus -.-> Comp
+    RegBus -.-> Reverb
+
+    %% レイアウト調整
+    Brain ~~~ Muscle
