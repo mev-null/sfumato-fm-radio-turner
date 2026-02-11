@@ -1,1 +1,14 @@
 This is FPGA-FM-radio project
+
+# 1.Modeling and Simulation
+## 1.1 Transmit
+擬似的な音声信号を生成し，その信号をFM信号に変調，ガウス雑音を乗せて，可視化するところまでのモデルの実装とシミュレーションを行なった
+
+### 音声信号→FM変調
+- アップサンプリングを行い，FM変調を行なった
+- サンプリングには線形補完を利用
+### FM変調信号にガウス雑音を乗せる
+- アップサンプリング済みの信号の電力から，ノイズ信号の電力を計算
+- ノイズ信号の電力からガウス雑音の正規分布を計算
+### 雑音が混じったFM信号を可視化
+<img width="1211" height="811" alt="signal_noisy" src="https://github.com/user-attachments/assets/983cb61c-0654-4bc8-b545-12008f4f4705" />
