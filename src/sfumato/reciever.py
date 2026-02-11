@@ -19,7 +19,7 @@ class FmReceiver:
         # --- フィルタ設計 ---
         # 20kHz以上の高周波ノイズをカットするLPF
         cutoff = 20_000
-        self.fir_taps = signal.firwin(numtaps=101, cutoff=cutoff, fs=self.rf_fs)
+        self.fir_taps = signal.firwin(numtaps=5001, cutoff=cutoff, fs=self.rf_fs)
 
         # デシメーション比
         self.dec_factor = int(self.rf_fs / self.audio_fs)
@@ -61,3 +61,19 @@ class FmReceiver:
 
         # 2. 間引き (Downsampling)
         return filtered_iq[:: self.dec_factor]
+
+    def _demodulate(self, iq_signal: np.ndarray) -> np.ndarray:
+        """
+        IQ信号から位相変化(周波数)を抽出し、音声信号に復元する
+        """
+        # 1. 位相(角度)を取り出す (-π ~ +π)
+        raw_phase = np.angle(iq_signal)
+
+        # 2. 位相の折り返しを修正する (Unwrap)
+        unwrapped_phase = np.unwrap(raw_phase)
+
+        # 3. 微分して周波数変化(音)にする
+        # 位相の変化スピード ＝ 周波数 ＝ 音の高さ(電圧)
+        demodulated = np.diff(unwrapped_phase)
+
+        return np.append(demodulated, 0.0)
