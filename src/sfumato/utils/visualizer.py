@@ -11,6 +11,7 @@ def plot_signal_analysis(
     title: str = "Signal Analysis",
     zoom_usec: float = 100.0,
     carrier_freq: float = None,
+    xlim_freq: list = None,
     figsize: tuple = (12, 8),
 ):
     """
@@ -22,6 +23,7 @@ def plot_signal_analysis(
         title (str): グラフのタイトル
         zoom_usec (float): 時間軸の拡大範囲 [マイクロ秒] (デフォルト: 100μs)
         carrier_freq (float, optional): 搬送波周波数のマーカー位置 [Hz]
+        xlim_freq (list, optional): 周波数領域のグラフの定義域
         figsize (tuple): 図のサイズ
     """
 
@@ -41,6 +43,8 @@ def plot_signal_analysis(
     zoom_samples = int(zoom_usec * 1e-6 * fs)
     if zoom_samples > N:
         zoom_samples = N
+    if zoom_samples < 2:
+        zoom_samples = N  # 安全策
 
     # 時間軸をマイクロ秒単位に変換してプロット
     t_zoom = t[:zoom_samples] * 1e6
@@ -54,56 +58,53 @@ def plot_signal_analysis(
             t_zoom, sig_zoom.imag, label="Q (Imag)", color="#ff7f0e", alpha=0.8
         )
         ax_time.set_ylabel("Amplitude (I/Q)")
+        ax_time.legend(loc="upper right")
     else:
         ax_time.plot(t_zoom, sig_zoom, color="#2ca02c")
         ax_time.set_ylabel("Amplitude")
 
-    ax_time.set_title(f"{title} - Time Domain (First {zoom_usec} μs)")
+    ax_time.set_title(f"{title} - Time Domain")
     ax_time.set_xlabel("Time [μs]")
     ax_time.grid(True, linestyle="--", alpha=0.6)
-    if is_complex:
-        ax_time.legend(loc="upper right")
 
     # --- 2. 周波数軸プロット (Frequency Domain) ---
     ax_freq = axes[1]
 
-    # FFTのサイズ（データが多すぎる場合は制限する）
-    n_fft = min(65536, N)  # 2の乗数が高速
-
-    # 窓関数を適用してスペクトル漏れを防ぐ
+    # FFT
+    n_fft = min(65536, N)
     window = hann(n_fft)
-    sig_fft_in = signal[:n_fft] * window
+    # データが少なすぎる場合の安全策
+    if len(signal) < n_fft:
+        sig_fft_in = np.pad(signal, (0, n_fft - len(signal))) * window
+    else:
+        sig_fft_in = signal[:n_fft] * window
 
-    # FFT計算
-    yf = fft(sig_fft_in)
-    yf = fftshift(yf)  # 0Hzを中心に移動
-    xf = fftfreq(n_fft, 1 / fs)
-    xf = fftshift(xf)
-
-    # パワースペクトル密度 (dB) に変換
-    # 1e-12 は log(0) を防ぐための微小値
+    yf = fftshift(fft(sig_fft_in))
+    xf = fftshift(fftfreq(n_fft, 1 / fs))
     mag_db = 20 * np.log10(np.abs(yf) / n_fft + 1e-12)
 
     # プロット
     ax_freq.plot(xf / 1e3, mag_db, color="#9467bd", linewidth=1.2)
 
-    # 搬送波周波数にマーカーを表示
+    # 搬送波マーカー
     if carrier_freq is not None:
         ax_freq.axvline(
-            x=carrier_freq / 1e3,
-            color="r",
-            linestyle=":",
-            label=f"Carrier: {carrier_freq / 1e3:.1f} kHz",
+            x=carrier_freq / 1e3, color="r", linestyle=":", label=f"Carrier"
         )
-        # 負の周波数側も表示（実信号の場合）
         if not is_complex:
             ax_freq.axvline(x=-carrier_freq / 1e3, color="r", linestyle=":", alpha=0.5)
         ax_freq.legend()
+
+    # 表示範囲の制限 ---
+    if xlim_freq is not None:
+        ax_freq.set_xlim(xlim_freq)
+    else:
+        # デフォルト: 全帯域
+        ax_freq.set_xlim([xf.min() / 1e3, xf.max() / 1e3])
 
     ax_freq.set_title("Frequency Domain (Spectrum)")
     ax_freq.set_xlabel("Frequency [kHz]")
     ax_freq.set_ylabel("Magnitude [dB]")
     ax_freq.grid(True, linestyle="--", alpha=0.6)
-    ax_freq.set_xlim([xf.min() / 1e3, xf.max() / 1e3])  # 全帯域を表示
 
     plt.show()
