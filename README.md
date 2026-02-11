@@ -18,7 +18,7 @@ https://github.com/user-attachments/assets/f829db6a-4b2d-4762-8efc-568c4f685ed2
 
 - 復調後の信号
 [time-tone_restored.wav](https://github.com/user-attachments/files/25239641/time-tone_restored.wav)
-(28s〜：ラジオ特有の雑音が混じっていることが確認できる)
+  (ラジオ特有の雑音が混じっていることが確認できる)
 
 ## 1.1 Transmit
 擬似的な音声信号を生成し，その信号をFM信号に変調，ガウス雑音を乗せるところまでのモデルとシミュレーションを行なった
