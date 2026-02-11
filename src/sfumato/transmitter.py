@@ -2,14 +2,16 @@
 import numpy as np
 import scipy
 
+from sfumato import settings
+
 
 class FmTransmitter:
     def __init__(
         self,
-        carrier_freq: float = 100_000.0,  # fc: 搬送波 (100kHz) (goal: 81.3MHzを受信したい)
-        audio_fs: float = 48_000.0,  # fs_in: 入力音声のサンプリングレート
-        rf_fs: float = 2_400_000.0,  # fs_out: 出力RFのサンプリングレート
-        max_deviation: float = 75_000.0,  # Δf: 最大周波数偏移 (75kHz)
+        carrier_freq: float = settings.CARRIER_FREQ,
+        audio_fs: float = settings.AUDIO_FS,
+        rf_fs: float = settings.RF_FS,
+        max_deviation: float = settings.MAX_DEVIATION,
     ):
         """
         FM送信機を初期化
