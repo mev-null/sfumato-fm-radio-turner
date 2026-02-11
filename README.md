@@ -12,3 +12,5 @@ This is FPGA-FM-radio project
 - ノイズ信号の電力からガウス雑音の正規分布を計算
 ### 雑音が混じったFM信号を可視化
 <img width="1211" height="811" alt="signal_noisy" src="https://github.com/user-attachments/assets/983cb61c-0654-4bc8-b545-12008f4f4705" />
+
+- 直感的で暫定的な理解： キャリア周波数の前後に元信号が含まれている．ガウス雑音を乗せたことで，その２つの和が，BPFによって取り出される
