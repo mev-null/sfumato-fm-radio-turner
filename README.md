@@ -2,10 +2,7 @@ This is FPGA-FM-radio project
 <img width="2811" height="853" alt="sfumato-radio-v1-0" src="https://github.com/user-attachments/assets/dd557f31-7457-422a-b91d-ca37e6aa2c50" />
 
 # 1.Modeling and Simulation
-## モデル全体のシミュレーション動画
-
-https://github.com/user-attachments/assets/f829db6a-4b2d-4762-8efc-568c4f685ed2
-
+## 概要
 時報の音声ファイルを
 1. FM信号に変調し，
 2. IQ信号に変換,
@@ -19,6 +16,13 @@ https://github.com/user-attachments/assets/f829db6a-4b2d-4762-8efc-568c4f685ed2
 - 復調後の信号
 [time-tone_restored.wav](https://github.com/user-attachments/files/25239641/time-tone_restored.wav)
   (ラジオ特有の雑音が混じっていることが確認できる)
+
+### モデル全体のシミュレーション動画
+
+https://github.com/user-attachments/assets/f829db6a-4b2d-4762-8efc-568c4f685ed2
+
+また，440Hzの正弦波を生成し，周波数特性のグラフを可視化し，モデルの正当性について考察した．
+
 
 ## 1.1 Transmit
 擬似的な音声信号を生成し，その信号をFM信号に変調，ガウス雑音を乗せるところまでのモデルとシミュレーションを行なった
