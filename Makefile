@@ -23,6 +23,11 @@ jupyter:
 	@echo "📓 Starting Jupyter Lab..."
 	$(UV) run jupyter lab
 
+.PHONE: kernel
+kernel:
+	@echo "activating notebook kernel..."
+	$(UV) run python -m ipykernel install --user --name=sfumato --display-name "Python (Sfumato)"
+
 .PHONY: fmt
 fmt:
 	@echo "🎨 Formatting code..."
