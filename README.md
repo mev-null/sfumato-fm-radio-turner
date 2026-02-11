@@ -1,4 +1,5 @@
 This is FPGA-FM-radio project
+<img width="2811" height="853" alt="sfumato-radio-v1-0" src="https://github.com/user-attachments/assets/dd557f31-7457-422a-b91d-ca37e6aa2c50" />
 
 # 1.Modeling and Simulation
 ## 1.1 Transmit
