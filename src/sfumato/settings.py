@@ -22,7 +22,8 @@ CARRIER_FREQ = 100_000  # 100 kHz
 
 # 最大周波数偏移 (Maximum Frequency Deviation)
 # 日本のFM放送規格に準拠 (+/- 75kHz)
-MAX_DEVIATION = 75_000
+# シミュレーション時はナローバンドで実行
+MAX_DEVIATION = 7_500
 
 
 # --- 派生定数 (Derived Constants) ---
