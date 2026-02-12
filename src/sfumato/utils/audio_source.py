@@ -31,41 +31,22 @@ class AudioSource:
         wave = amplitude * np.sin(2 * np.pi * frequency * t)
         return wave.astype(np.float32)
 
-    def load_wav(self, filepath: str, duration: float = None) -> np.ndarray:
+    def time_tone(
+        self,
+        fs: float,
+    ):
         """
-        WAVファイルを読み込み、モノラル化・リサンプリング・正規化を行います。
-
-        Args:
-            filepath: ファイルパス
-            duration: 読み込む長さ（秒）。Noneなら全部。
-
-        Returns:
-            np.ndarray: 音声データ配列
+        時報 (Time Signal) 生成ロジック
         """
-        # soundfileで読み込み
-        data, original_fs = sf.read(filepath, always_2d=True)
+        t_short = np.arange(0, 0.1, 1 / fs)
+        beep_440 = 0.5 * np.sin(2 * np.pi * 440 * t_short)
 
-        # 1. ステレオ→モノラル変換 (平均をとる)
-        # dataは (samples, channels) の形
-        if data.shape[1] > 1:
-            data = np.mean(data, axis=1)
-        else:
-            data = data.flatten()
+        silence = np.zeros(int(0.9 * fs))
 
-        # 2. リサンプリング (元のレートが違う場合)
-        if original_fs != self.fs:
-            number_of_samples = int(len(data) * self.fs / original_fs)
-            data = signal.resample(data, number_of_samples)
+        t_long = np.arange(0, 2.0, 1 / fs)
+        beep_880 = 0.5 * np.sin(2 * np.pi * 880 * t_long)
 
-        # 3. 指定した長さで切り出し
-        if duration is not None:
-            max_samples = int(self.fs * duration)
-            if len(data) > max_samples:
-                data = data[:max_samples]
+        unit = np.concatenate([beep_440, silence])
+        melody = np.concatenate([unit, unit, unit, beep_880])
 
-        # 4. 正規化 (最大値を1.0にする)
-        max_val = np.max(np.abs(data))
-        if max_val > 0:
-            data = data / max_val * 0.9  # 0.9掛けでクリップ防止
-
-        return data.astype(np.float32)
+        return melody
