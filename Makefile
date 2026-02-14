@@ -18,15 +18,16 @@ run:
 	@echo "🚀 Running simulation..."
 	$(UV) run src/sfumato/main.py
 
-.PHONY: jupyter
-jupyter:
-	@echo "📓 Starting Jupyter Lab..."
-	$(UV) run jupyter lab
-
-.PHONE: kernel
+.PHONY: kernel
 kernel:
-	@echo "activating notebook kernel..."
+	@echo "🔌 Registering kernel..."
 	$(UV) run python -m ipykernel install --user --name=sfumato --display-name "Python (Sfumato)"
+
+.PHONY: jupyter
+jupyter: kernel
+	@echo "📓 Starting Jupyter Lab..."
+	$(UV) add --dev jupyterlab
+	$(UV) run jupyter lab
 
 .PHONY: fmt
 fmt:
