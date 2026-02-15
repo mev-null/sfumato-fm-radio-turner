@@ -67,12 +67,14 @@ IQ信号から位相変化を取り出し，音声に変換した
 位相を微分し，位相変化を計算．位相変化がそのまま音の周波数の一部になる．
 ### 復調された音声を可視化
 <img width="1211" height="811" alt="output3" src="https://github.com/user-attachments/assets/5a5b3f1c-a1d5-492b-9918-5766e2ce95a9" />
+
 それなりに元の信号と同じ形に復元できた．また，周波数特性も440Hzに生じており，妥当．
 
 ## 1.4 Stereo Multiplexing
 FM変復調に，ステレオ音源が対応できるようになった．
 シミュレーションに使用した信号は，L成分が440Hz, R成分が880Hzのステレオ信号
 <img width="857" height="393" alt="stereo_sine" src="https://github.com/user-attachments/assets/2b5e5257-e11e-4676-8d7c-e58ff5eda417" />
+
 簡易的に，音声信号レート(48kHz)とラジオ波レート(約2.4MHz)の双方向からdecimationする過程において，中間にMPX信号レート(192kHz)を設けた．
 
 ### 送信機
