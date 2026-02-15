@@ -16,28 +16,52 @@ class AudioSource:
         self, frequency: float, duration: float, amplitude: float = 0.8
     ) -> np.ndarray:
         """
-        指定した周波数の正弦波（サイン波）を生成します。
+        [モノラル] 指定した周波数の正弦波（サイン波）を生成します。
 
         Args:
-            frequency: 周波数 (Hz) 例: 440.0 (ラの音)
+            frequency: 周波数 (Hz) 例: 440.0
             duration: 長さ (秒)
             amplitude: 振幅 (0.0 ~ 1.0)
 
         Returns:
-            np.ndarray: 音声データ配列 (-1.0 ~ 1.0)
+            np.ndarray: 音声データ配列 (N,)
         """
         t = np.arange(int(self.fs * duration)) / self.fs
-        # sin(2πft)
         wave = amplitude * np.sin(2 * np.pi * frequency * t)
         return wave.astype(np.float32)
 
-    def time_tone(
-        self,
-        fs: float,
-    ):
+    def stereo_sine_tone(
+        self, freq_l: float, freq_r: float, duration: float, amplitude: float = 0.5
+    ) -> np.ndarray:
         """
-        時報 (Time Signal) 生成ロジック
+        [ステレオ] 左右で異なる周波数の正弦波を生成します。
+
+        Args:
+            freq_l: 左チャンネルの周波数 (Hz)
+            freq_r: 右チャンネルの周波数 (Hz)
+            duration: 長さ (秒)
+            amplitude: 振幅
+
+        Returns:
+            np.ndarray: 音声データ配列 (N, 2)
         """
+        t = np.arange(int(self.fs * duration)) / self.fs
+
+        # 左 (Left) と 右 (Right)
+        wave_l = amplitude * np.sin(2 * np.pi * freq_l * t)
+        wave_r = amplitude * np.sin(2 * np.pi * freq_r * t)
+
+        # 結合して (Samples, 2) の形にする
+        stereo_wave = np.stack([wave_l, wave_r], axis=1)
+
+        return stereo_wave.astype(np.float32)
+
+    def time_tone(self) -> np.ndarray:
+        """
+        [モノラル] 時報 (Time Signal) 生成ロジック
+        """
+        fs = self.fs
+
         t_short = np.arange(0, 0.1, 1 / fs)
         beep_440 = 0.5 * np.sin(2 * np.pi * 440 * t_short)
 
@@ -49,4 +73,49 @@ class AudioSource:
         unit = np.concatenate([beep_440, silence])
         melody = np.concatenate([unit, unit, unit, beep_880])
 
-        return melody
+        return melody.astype(np.float32)
+
+    def stereo_time_tone(
+        self,
+        freq_l_short: float = 440.0,
+        freq_l_long: float = 880.0,
+        freq_r_short: float = 660.0,
+        freq_r_long: float = 1320.0,
+    ) -> np.ndarray:
+        """
+        [ステレオ] 左右で異なる周波数の時報（Time Signal）を生成
+
+        Args:
+            freq_l_short: 左チャンネルの短い音 (Hz)
+            freq_l_long:  左チャンネルの長い音 (Hz)
+            freq_r_short: 右チャンネルの短い音 (Hz)
+            freq_r_long:  右チャンネルの長い音 (Hz)
+
+        Returns:
+            np.ndarray: 音声データ配列 (N, 2)
+        """
+        fs = self.fs
+
+        # 時間軸生成
+        t_short = np.arange(int(0.1 * fs)) / fs  # 0.1秒
+        t_long = np.arange(int(2.0 * fs)) / fs  # 2.0秒
+        silence = np.zeros(int(0.9 * fs))  # 0.9秒 (無音)
+
+        # --- Left Channel ---
+        l_beep_short = 0.5 * np.sin(2 * np.pi * freq_l_short * t_short)
+        l_beep_long = 0.5 * np.sin(2 * np.pi * freq_l_long * t_long)
+
+        # ユニット: [ピッ(0.1s)] + [無音(0.9s)]
+        l_unit = np.concatenate([l_beep_short, silence])
+        # メロディ: ユニットx3 + ポーン(2.0s)
+        l_melody = np.concatenate([l_unit, l_unit, l_unit, l_beep_long])
+
+        # --- Right Channel ---
+        r_beep_short = 0.5 * np.sin(2 * np.pi * freq_r_short * t_short)
+        r_beep_long = 0.5 * np.sin(2 * np.pi * freq_r_long * t_long)
+
+        r_unit = np.concatenate([r_beep_short, silence])
+        r_melody = np.concatenate([r_unit, r_unit, r_unit, r_beep_long])
+
+        # ステレオ結合 (N, 2)
+        return np.stack([l_melody, r_melody], axis=1).astype(np.float32)
