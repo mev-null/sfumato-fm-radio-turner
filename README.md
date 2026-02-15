@@ -118,9 +118,10 @@ FM変復調に，ステレオ音源が対応できるようになった．
 4.  復調した信号にLPF(15kHz) をかけて、音声信号に戻す.
 
 現時点で，音楽の信号を，それなりの音質で復調できるようになった
-変調前の音学：[first_ancem92.wav](https://github.com/user-attachments/files/25324970/first_ancem92.wav)
 
-復調後の音楽：[first_ancem92_restored.wav](https://github.com/user-attachments/files/25324963/first_ancem92_restored.wav)
+- 変調前の音学：[first_ancem92.wav](https://github.com/user-attachments/files/25324970/first_ancem92.wav)
+
+- 復調後の音楽：[first_ancem92_restored.wav](https://github.com/user-attachments/files/25324963/first_ancem92_restored.wav)
 
 ---
 ## 🎧 Audio Credits & License
