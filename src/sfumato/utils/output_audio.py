@@ -13,23 +13,32 @@ def save_audio(
 ):
     """
     信号をWAVファイルとして保存するための汎用関数。
+    モノラル(1D)とステレオ(2D)の両方に対応
 
     Args:
-        signal (np.ndarray): 保存したい音声信号
+        signal (np.ndarray): 音声信号。Shapeは (N,) または (N, 2)
         fs (int): サンプリング周波数
         filename (str): 保存先のパス
-        normalize (bool): Trueならピークを gain に合わせる。Falseならそのまま保存。
-        gain (float): 音量の目標値 (0.0 〜 1.0)。デフォルトは 0.5 (50%)。
-                      normalize=True の場合は「最大音量」、Falseの場合は「単純な倍率」になります。
+        normalize (bool): Trueならピークを gain に合わせる。
+                          ステレオの場合、左右のバランス（定位）を保ったまま正規化
+        gain (float): 音量の目標値 (0.0 〜 1.0)。
     """
 
     audio_data = signal.copy()
 
+    # モノラル/ステレオの判定 (ログ出力用)
+    channels = 1
+    if audio_data.ndim == 2:
+        channels = audio_data.shape[1]
+
+    mode_str = "Stereo" if channels == 2 else "Mono"
+
     # 1. DCオフセット除去
-    audio_data = audio_data - np.mean(audio_data)
+    audio_data = audio_data - np.mean(audio_data, axis=0)
 
     # 2. 音量調整
     if normalize:
+        # ステレオの場合、全体の最大値で割ることで、左右の音量差（パンニング）を維持します
         max_val = np.max(np.abs(audio_data))
         if max_val > 0:
             audio_data = (audio_data / max_val) * gain
@@ -37,7 +46,7 @@ def save_audio(
         audio_data = audio_data * gain
 
     # 3. float32 から int16 に変換 (クリッピング防止付き)
-    # 1.0 を超えると音が割れるので、念のため -1.0〜1.0 に収める
+    # -1.0〜1.0 に収める
     audio_data = np.clip(audio_data, -1.0, 1.0)
     audio_int16 = (audio_data * 32767).astype(np.int16)
 
@@ -45,4 +54,4 @@ def save_audio(
         os.path.dirname(filename) if os.path.dirname(filename) else ".", exist_ok=True
     )
     wav.write(filename, int(fs), audio_int16)
-    print(f"Saved audio to: {filename} (Gain: {gain})")
+    print(f"Saved [{mode_str}] audio to: {filename} (Gain: {gain})")
