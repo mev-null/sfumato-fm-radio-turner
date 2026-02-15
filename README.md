@@ -10,13 +10,6 @@ This is FPGA-FM-radio project
    
 通信路では，ホワイトノイズ(ガウス雑音)が乗ることを仮定してモデルの構築を行なった.
 
-- 変調前の信号
-[time-tone.wav](https://github.com/user-attachments/files/25239643/time-tone.wav)
-
-- 復調後の信号
-[time-tone_restored.wav](https://github.com/user-attachments/files/25239641/time-tone_restored.wav)
-  (ラジオ特有の雑音が混じっていることが確認できる)
-
 ### モデル全体のシミュレーション動画
 
 https://github.com/user-attachments/assets/f829db6a-4b2d-4762-8efc-568c4f685ed2
@@ -67,6 +60,15 @@ IQ信号から位相変化を取り出し，音声に変換した
 <img width="1211" height="811" alt="output3" src="https://github.com/user-attachments/assets/5a5b3f1c-a1d5-492b-9918-5766e2ce95a9" />
 
 それなりに元の信号と同じ形に復元できた．また，周波数特性も440Hzに生じており，妥当．
+
+この時点におけるモデルで時報音声を復調した際の結果は以下の通り．
+
+- 変調前の信号
+[time-tone.wav](https://github.com/user-attachments/files/25239643/time-tone.wav)
+
+- 復調後の信号
+[time-tone_restored.wav](https://github.com/user-attachments/files/25239641/time-tone_restored.wav)
+  (ラジオ特有の雑音が混じっていることが確認できる)
 
 ## 1.4 Stereo Multiplexing
 FM変復調に，ステレオ音源が対応できるようになった．
