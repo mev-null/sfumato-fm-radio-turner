@@ -116,3 +116,24 @@ FM変復調に，ステレオ音源が対応できるようになった．
 2. 19kHzパイロット信号から38kHz搬送波を再生する．
 3. 検波: フィルタリングしたMPX信号に，再生した 38kHz 搬送波を掛け算する（復調）
 4.  復調した信号にLPF(15kHz) をかけて、音声信号に戻す.
+
+現時点で，音楽の信号を，それなりの音質で復調できるようになった
+変調前の音学：[first_ancem92.wav](https://github.com/user-attachments/files/25324970/first_ancem92.wav)
+
+復調後の音楽：[first_ancem92_restored.wav](https://github.com/user-attachments/files/25324963/first_ancem92_restored.wav)
+
+---
+## 🎧 Audio Credits & License
+
+The audio files used in this project have two different origins:
+
+### Original Composition
+- **"first_ancem92.wav"**
+  - **Composer/Producer:** mev-null
+  - **Copyright:** © 2026 mev-null. All rights reserved.
+  - **Description:** An original piece composed to test the fidelity of the stereo FM demodulation. It blends mathematical precision with aesthetic sensibility.
+
+### Usage License for the Code and Music
+- **Code:** Licensed under the [MIT License](LICENSE).
+- **Music (first_ancem92.wav):** Licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). 
+  - (You are free to share the audio, but you must provide credit, and you cannot use it for commercial purposes or create derivative works.)
