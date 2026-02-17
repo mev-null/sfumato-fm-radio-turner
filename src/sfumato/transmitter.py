@@ -1,7 +1,9 @@
 # FM変調・送信機モデル
 import numpy as np
 from scipy import signal
+
 from sfumato import settings
+from sfumato.dsp.emphasis import EmphasisFilter
 
 
 class FmTransmitter:
@@ -25,6 +27,10 @@ class FmTransmitter:
         self.PILOT_FREQ = settings.PILOT_FREQ
         self.SUB_FREQ = settings.SUB_FREQ
 
+        self.emphasis = EmphasisFilter(
+            fs=self.audio_fs, time_constant=settings.TIME_CONSTANT
+        )
+
     def modulate(self, audio_data: np.ndarray) -> np.ndarray:
         """
         ステレオ信号を受け取り、FM変調されたRF信号を返す(モノラル信号対応)
@@ -38,9 +44,12 @@ class FmTransmitter:
             l_ch = audio_data
             r_ch = audio_data
 
+        l_pre = self.emphasis.pre_emphasis(l_ch)
+        r_pre = self.emphasis.pre_emphasis(r_ch)
+
         # 2. アップサンプリング (Audio 48k -> MPX 192k)
-        l_upsampled = self._upsample(l_ch, self.audio_fs, self.mpx_fs)
-        r_upsampled = self._upsample(r_ch, self.audio_fs, self.mpx_fs)
+        l_upsampled = self._upsample(l_pre, self.audio_fs, self.mpx_fs)
+        r_upsampled = self._upsample(r_pre, self.audio_fs, self.mpx_fs)
 
         # 3. MPX信号 (コンポジット) の生成
         mpx_signal = self._generate_mpx(l_upsampled, r_upsampled)

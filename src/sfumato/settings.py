@@ -31,6 +31,10 @@ CARRIER_FREQ = 250_000  # 250 kHz
 # 日本のFM放送規格に準拠 (+/- 75kHz Wide FM)
 MAX_DEVIATION = 75_000
 
+# 時定数
+# 日本のFM放送規格に準拠 (50 \mu s)
+TIME_CONSTANT = 50e-6
+
 
 # --- 派生定数 (Derived Constants) ---
 

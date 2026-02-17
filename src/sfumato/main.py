@@ -89,39 +89,48 @@ def main():
     try:
         RadioUI.log("VISUALIZER", "Generating Stereo Analysis Graph...", RadioUI.DIM)
 
-        # データの準備 (モノラル入力への対応も念のため入れる)
-        if audio_data.ndim == 2:
-            in_l, in_r = audio_data[:, 0], audio_data[:, 1]
-        else:
-            in_l, in_r = audio_data, audio_data
+        # ヘルパー関数: 確実に (N, 2) に整形して L, R を返す
+        def split_channels(data):
+            # 1次元 (N,) -> モノラル (L=R)
+            if data.ndim == 1:
+                return data, data
+            # 2次元 (N, 2) -> ステレオ
+            elif data.ndim == 2 and data.shape[1] == 2:
+                return data[:, 0], data[:, 1]
+            # 2次元 (N, 1) -> モノラル
+            elif data.ndim == 2 and data.shape[1] == 1:
+                flat = data.flatten()
+                return flat, flat
+            else:
+                raise ValueError(f"Unexpected data shape: {data.shape}")
 
-        if demodulated_audio.ndim == 2:
-            out_l, out_r = demodulated_audio[:, 0], demodulated_audio[:, 1]
-        else:
-            out_l, out_r = demodulated_audio, demodulated_audio
+        # 入力と出力を安全に分離
+        in_l, in_r = split_channels(audio_data)
+        out_l, out_r = split_channels(demodulated_audio)
 
         # プロット開始
         plt.figure(figsize=(14, 10))
-        limit = 1000  # 拡大表示するサンプル数
+        limit = 1000  # 拡大表示するサンプル数 (先頭1000サンプル)
+        
+        # 時間軸 (ms)
+        t_axis = np.arange(limit) / settings.AUDIO_FS * 1000
 
         # --- [左上] Left Ch 時間波形 ---
         plt.subplot(2, 2, 1)
-        plt.plot(in_l[:limit], label="In (L)", color="blue", alpha=0.5)
-        plt.plot(
-            out_l[:limit], label="Out (L)", color="cyan", alpha=0.8, linestyle="--"
-        )
+        plt.plot(t_axis, in_l[:limit], label="In (L)", color="blue", alpha=0.5)
+        plt.plot(t_axis, out_l[:limit], label="Out (L)", color="cyan", alpha=0.8, linestyle="--")
         plt.title("Left Channel (Time Domain)")
+        plt.xlabel("Time [ms]")
+        plt.ylabel("Amplitude")
         plt.legend(loc="upper right")
         plt.grid(True, alpha=0.3)
-        plt.ylabel("Amplitude")
 
         # --- [右上] Right Ch 時間波形 ---
         plt.subplot(2, 2, 2)
-        plt.plot(in_r[:limit], label="In (R)", color="red", alpha=0.5)
-        plt.plot(
-            out_r[:limit], label="Out (R)", color="orange", alpha=0.8, linestyle="--"
-        )
+        plt.plot(t_axis, in_r[:limit], label="In (R)", color="red", alpha=0.5)
+        plt.plot(t_axis, out_r[:limit], label="Out (R)", color="orange", alpha=0.8, linestyle="--")
         plt.title("Right Channel (Time Domain)")
+        plt.xlabel("Time [ms]")
         plt.legend(loc="upper right")
         plt.grid(True, alpha=0.3)
 
@@ -129,14 +138,7 @@ def main():
         plt.subplot(2, 2, 3)
         plt.title("Left Channel (PSD)")
         plt.psd(in_l, Fs=settings.AUDIO_FS, NFFT=1024, color="blue", label="In (L)")
-        plt.psd(
-            out_l,
-            Fs=settings.AUDIO_FS,
-            NFFT=1024,
-            color="cyan",
-            label="Out (L)",
-            linestyle="--",
-        )
+        plt.psd(out_l, Fs=settings.AUDIO_FS, NFFT=1024, color="cyan", label="Out (L)", linestyle="--")
         plt.xlim(0, 15000)
         plt.legend(loc="upper right")
 
@@ -144,14 +146,7 @@ def main():
         plt.subplot(2, 2, 4)
         plt.title("Right Channel (PSD)")
         plt.psd(in_r, Fs=settings.AUDIO_FS, NFFT=1024, color="red", label="In (R)")
-        plt.psd(
-            out_r,
-            Fs=settings.AUDIO_FS,
-            NFFT=1024,
-            color="orange",
-            label="Out (R)",
-            linestyle="--",
-        )
+        plt.psd(out_r, Fs=settings.AUDIO_FS, NFFT=1024, color="orange", label="Out (R)", linestyle="--")
         plt.xlim(0, 15000)
         plt.legend(loc="upper right")
 
@@ -165,7 +160,6 @@ def main():
 
     except Exception as e:
         import traceback
-
         traceback.print_exc()
         RadioUI.log("ERROR", f"Graph generation failed: {e}", RadioUI.RED)
 
