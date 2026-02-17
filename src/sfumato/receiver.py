@@ -1,7 +1,8 @@
 import numpy as np
 from scipy import signal
-from sfumato import settings
 
+from sfumato import settings
+from sfumato.dsp.emphasis import EmphasisFilter
 
 class FmReceiver:
     def __init__(
@@ -18,6 +19,11 @@ class FmReceiver:
 
         # decimatoin ratio
         self.dec_factor = int(self.rf_fs / self.mpx_fs)
+
+        self.emphasis = EmphasisFilter(
+            fs=self.audio_fs,
+            time_constant=settings.TIME_CONSTANT
+        )
 
     def process(self, rf_signal: np.ndarray) -> np.ndarray:
         """
@@ -117,4 +123,8 @@ class FmReceiver:
         left_out = signal.decimate(left_ch, q, ftype="fir")
         right_out = signal.decimate(right_ch, q, ftype="fir")
 
-        return np.stack([left_out, right_out], axis=1)
+        # --- 5. De Emphasis ---
+        left_final = self.emphasis.de_emphasis(left_out)
+        right_final = self.emphasis.de_emphasis(right_out)
+
+        return np.stack([left_final, right_final], axis=1)
