@@ -140,3 +140,26 @@ The audio files used in this project have two different origins:
 - **Code:** Licensed under the [MIT License](LICENSE).
 - **Music (first_ancem92.wav):** Licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). 
   - (You are free to share the audio, but you must provide credit, and you cannot use it for commercial purposes or create derivative works.)
+
+## 1.5 Refine Algorithm
+実際に人間がFM放送を聴けるようにフィルター処理などを追加した
+### 1.5.1 pre-emphasis と　de-emphasis の実装
+FM信号は、復調する際に三角関数を時間微分する。位相には周波数情報が含まれているため、微分した結果、復調信号は振幅に比例することになる。
+いま、通信路ではガウス雑音が乗ることを仮定しているが、これは、すべての周波数のノイズが乗ることを意味する。
+したがって、信号は高周波成分になるほど雑音の影響を受けやすくなる。
+さらに、音声は、エネルギー保存則によって、高周波成分ほどエネルギーが小さくなるという特性がある。
+これらの課題を克服するために、以下の処理を行った。
+
+1. 送信機側で、送信信号をHigh-Shelf Filterにかけて、高周波成分を増幅する
+2. 受信機側では、受信信号にLPFにかけて高周波成分をカットする
+
+#### 結果
+結果を分かりやすくするために、ガウス雑音が大きめにかかるモデルを想定してシミュレーションを行った
+- 追加処理前の復調した音楽信号
+<img width="1400" height="1000" alt="ancem92_10db_analysis" src="https://github.com/user-attachments/assets/23bfe13e-03c4-4a58-a298-58803de16a13" />
+
+- 追加処理後の復調した音楽信号
+<img width="1400" height="1000" alt="ancem92_emphasised_10db_analysis" src="https://github.com/user-attachments/assets/9137d37b-cdd3-4cf1-9c2f-9e06f2ef189a" />
+
+高周波数領域をみると、元信号と同じように周波数の増加に伴って振幅が減少するようになった。
+これは、pre-emphasis と　de-emphasisの処理によって、信号の高周波成分がノイズに強くなったこと、三角ノイズを減らせるようになったことを示唆していると考えられる。
