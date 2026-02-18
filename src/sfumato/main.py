@@ -111,14 +111,21 @@ def main():
         # プロット開始
         plt.figure(figsize=(14, 10))
         limit = 1000  # 拡大表示するサンプル数 (先頭1000サンプル)
-        
+
         # 時間軸 (ms)
         t_axis = np.arange(limit) / settings.AUDIO_FS * 1000
 
         # --- [左上] Left Ch 時間波形 ---
         plt.subplot(2, 2, 1)
         plt.plot(t_axis, in_l[:limit], label="In (L)", color="blue", alpha=0.5)
-        plt.plot(t_axis, out_l[:limit], label="Out (L)", color="cyan", alpha=0.8, linestyle="--")
+        plt.plot(
+            t_axis,
+            out_l[:limit],
+            label="Out (L)",
+            color="cyan",
+            alpha=0.8,
+            linestyle="--",
+        )
         plt.title("Left Channel (Time Domain)")
         plt.xlabel("Time [ms]")
         plt.ylabel("Amplitude")
@@ -128,7 +135,14 @@ def main():
         # --- [右上] Right Ch 時間波形 ---
         plt.subplot(2, 2, 2)
         plt.plot(t_axis, in_r[:limit], label="In (R)", color="red", alpha=0.5)
-        plt.plot(t_axis, out_r[:limit], label="Out (R)", color="orange", alpha=0.8, linestyle="--")
+        plt.plot(
+            t_axis,
+            out_r[:limit],
+            label="Out (R)",
+            color="orange",
+            alpha=0.8,
+            linestyle="--",
+        )
         plt.title("Right Channel (Time Domain)")
         plt.xlabel("Time [ms]")
         plt.legend(loc="upper right")
@@ -138,7 +152,14 @@ def main():
         plt.subplot(2, 2, 3)
         plt.title("Left Channel (PSD)")
         plt.psd(in_l, Fs=settings.AUDIO_FS, NFFT=1024, color="blue", label="In (L)")
-        plt.psd(out_l, Fs=settings.AUDIO_FS, NFFT=1024, color="cyan", label="Out (L)", linestyle="--")
+        plt.psd(
+            out_l,
+            Fs=settings.AUDIO_FS,
+            NFFT=1024,
+            color="cyan",
+            label="Out (L)",
+            linestyle="--",
+        )
         plt.xlim(0, 15000)
         plt.legend(loc="upper right")
 
@@ -146,7 +167,14 @@ def main():
         plt.subplot(2, 2, 4)
         plt.title("Right Channel (PSD)")
         plt.psd(in_r, Fs=settings.AUDIO_FS, NFFT=1024, color="red", label="In (R)")
-        plt.psd(out_r, Fs=settings.AUDIO_FS, NFFT=1024, color="orange", label="Out (R)", linestyle="--")
+        plt.psd(
+            out_r,
+            Fs=settings.AUDIO_FS,
+            NFFT=1024,
+            color="orange",
+            label="Out (R)",
+            linestyle="--",
+        )
         plt.xlim(0, 15000)
         plt.legend(loc="upper right")
 
@@ -160,6 +188,7 @@ def main():
 
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         RadioUI.log("ERROR", f"Graph generation failed: {e}", RadioUI.RED)
 
