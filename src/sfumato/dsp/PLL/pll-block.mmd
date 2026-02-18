@@ -1,0 +1,40 @@
+graph LR
+    %% Define Nodes
+    Input(["Input: MPX 19kHz"])
+    PhaseDet(("Phase Detector"))
+    
+    subgraph LoopFilterBlock ["Loop Filter (PI Controller)"]
+        direction LR
+        PropGain["Proportional Gain"]
+        Integrator["Integrator"]
+        Adder{"Sum"}
+    end
+
+    subgraph NCOBlock ["NCO (Numerically Controlled Oscillator)"]
+        direction LR
+        PhaseAcc["Phase Accumulator"]
+        CosGen["Cos Generator"]
+    end
+
+    OutputGen["Freq Doubler (x2)"]
+    Output(["Output: Carrier 38kHz"])
+
+    %% Main Path
+    Input --> PhaseDet
+    PhaseDet -- Error --> PropGain
+    PhaseDet -- Error --> Integrator
+    
+    %% Loop Filter Internal
+    PropGain -- "alpha * err" --> Adder
+    Integrator -- "beta * err (accum)" --> Adder
+    
+    %% NCO Internal
+    Adder -- "Control Signal" --> PhaseAcc
+    PhaseAcc -- Phase --> CosGen
+    
+    %% Feedback Path
+    CosGen -.-> |"Feedback: cos(phi)"| PhaseDet
+
+    %% Output Path
+    PhaseAcc -- Phase --> OutputGen
+    OutputGen -- "sin(2*phi)" --> Output
