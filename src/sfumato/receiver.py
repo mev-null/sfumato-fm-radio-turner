@@ -4,6 +4,7 @@ from scipy import signal
 from sfumato import settings
 from sfumato.dsp.emphasis import EmphasisFilter
 
+
 class FmReceiver:
     def __init__(
         self,
@@ -21,8 +22,7 @@ class FmReceiver:
         self.dec_factor = int(self.rf_fs / self.mpx_fs)
 
         self.emphasis = EmphasisFilter(
-            fs=self.audio_fs,
-            time_constant=settings.TIME_CONSTANT
+            fs=self.audio_fs, time_constant=settings.TIME_CONSTANT
         )
 
     def process(self, rf_signal: np.ndarray) -> np.ndarray:

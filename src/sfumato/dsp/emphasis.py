@@ -30,16 +30,16 @@ class EmphasisFilter:
         デジタル・プリエンファシス/ディエンファシスの係数計算
         """
         fc = 1.0 / (2.0 * np.pi * self.tau)
-        
-        if mode == 'pre':
+
+        if mode == "pre":
             # --- Pre-emphasis (High-Shelf Filter) ---
-            
+
             # y[n] = x[n] + alpha * (x[n] - x[n-1])
             # alpha = tau / T = tau * fs
             # 1次微分 (High-pass) 成分を足し合わせる処理
-            
-            alpha = self.tau * self.fs # 例: 50e-6 * 48000 = 2.4
-            
+
+            alpha = self.tau * self.fs  # 例: 50e-6 * 48000 = 2.4
+
             # 係数: b0 = 1 + alpha, b1 = -alpha
             # H(z) = (1+alpha) - alpha*z^-1
             b = [1.0 + alpha, -alpha]
@@ -51,15 +51,15 @@ class EmphasisFilter:
             # --- De-emphasis (Low-Pass Filter) ---
             # 標準的な IIR LPF
             # y[n] = (1-p)*x[n] + p*y[n-1]  (p = exp(-1/(fs*tau)))
-            
+
             dt = 1.0 / self.fs
-            p = np.exp(-dt / self.tau) # 減衰係数
-            
+            p = np.exp(-dt / self.tau)  # 減衰係数
+
             # IIRフィルタ係数
             # H(z) = (1-p) / (1 - p*z^-1)
             b = [1.0 - p]
             a = [1.0, -p]
-            
+
             return b, a
 
     def pre_emphasis(self, data: np.ndarray) -> np.ndarray:
