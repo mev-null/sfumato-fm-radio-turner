@@ -19,10 +19,10 @@ def main():
     RadioUI.header()
 
     # --- 設定 ---
-    INPUT_FILE = "stereo-time-tone.wav"
+    INPUT_FILE = "first_ancem92.wav"
     base_name = os.path.splitext(os.path.basename(INPUT_FILE))[0]
     OUTPUT_FILE = f"outputs/{base_name}_restored.wav"
-    TARGET_SNR = 30.0
+    TARGET_SNR = 10.0
 
     # テスト音源生成
     if not os.path.exists(INPUT_FILE):
