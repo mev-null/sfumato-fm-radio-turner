@@ -36,6 +36,14 @@ MAX_DEVIATION = 75_000
 TIME_CONSTANT = 50e-6
 
 
+# --- 制御ループ定数 (PLL Settings) ---
+
+# PLL (Phase Locked Loop) 用の設定
+# ノイズ除去と追従性のバランスを決める
+PLL_BANDWIDTH = 50.0  # ループ帯域幅 (Hz): 狭いほどノイズに強い
+PLL_DAMPING = 1.2  # ダンピング係数 (zeta): 0.707が最も応答が良い
+
+
 # --- 派生定数 (Derived Constants) ---
 
 # デシメーション係数 (Decimation Factor)

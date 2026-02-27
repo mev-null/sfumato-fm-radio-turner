@@ -3,6 +3,8 @@ from scipy import signal
 
 from sfumato import settings
 from sfumato.dsp.emphasis import EmphasisFilter
+from sfumato.dsp.pll import PilotPLL
+
 
 class FmReceiver:
     def __init__(
@@ -16,13 +18,13 @@ class FmReceiver:
         self.rf_fs = rf_fs
         self.mpx_fs = mpx_fs
         self.audio_fs = audio_fs
+        self.pll = PilotPLL()
 
         # decimatoin ratio
         self.dec_factor = int(self.rf_fs / self.mpx_fs)
 
         self.emphasis = EmphasisFilter(
-            fs=self.audio_fs,
-            time_constant=settings.TIME_CONSTANT
+            fs=self.audio_fs, time_constant=settings.TIME_CONSTANT
         )
 
     def process(self, rf_signal: np.ndarray) -> np.ndarray:
@@ -64,22 +66,7 @@ class FmReceiver:
         """
         MPX信号から19kHzパイロットを抽出し、38kHz搬送波を再生する
         """
-        # 1. 19kHz パイロット信号の抽出
-        target_freq = 19000
-        quality_factor = 30.0  # Q値
-
-        # IIRピークフィルタ
-        b, a = signal.iirpeak(target_freq, quality_factor, fs=self.mpx_fs)
-        pilot_tone = signal.lfilter(b, a, mpx_signal)
-
-        # 2. 38kHz への逓倍 (Teigen-Doubling)
-        # 2乗して2倍波を作る: sin^2(x) = (1 - cos(2x))/2
-        doubled = pilot_tone**2
-
-        # 3. 38kHz成分のみ抽出 (DC成分などを除去)
-        target_freq_38 = 38000
-        b2, a2 = signal.iirpeak(target_freq_38, quality_factor, fs=self.mpx_fs)
-        carrier_38k = signal.lfilter(b2, a2, doubled)
+        carrier_38k, _ = self.pll.process(mpx_signal)
 
         # 正規化 (振幅を1.0に揃える)
         if np.max(np.abs(carrier_38k)) > 0:
