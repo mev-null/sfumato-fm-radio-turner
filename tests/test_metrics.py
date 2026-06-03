@@ -2,7 +2,7 @@
 メトリクス層の契約テスト(red → green の的)。
 
 ここは「メトリクスの定義が正しいか」を、答えが分かっている合成信号で確かめる
-ユニットテスト。sfumato/eval/metrics.py を実装すると green になる。
+ユニットテスト。algo/eval/metrics.py を実装すると green になる。
 （後段 1.7 で、実際の復調パイプライン出力をこれらの関数に通してゲート化する。）
 
 コヒーレントサンプリング(整数周期)になるよう fs/N/f0 を選んでいるので、
@@ -12,7 +12,7 @@ FFT のビンが基本波・高調波にちょうど乗る。
 import numpy as np
 import pytest
 
-from sfumato.eval import metrics
+from algo.eval import metrics
 
 FS = 48_000
 N = 48_000  # 1 秒 → 周波数分解能 1 Hz

@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import signal
-from sfumato import settings
+from algo import settings
 
 
 class EmphasisFilter:

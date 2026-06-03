@@ -1,9 +1,9 @@
 import numpy as np
 from scipy import signal
 
-from sfumato import settings
-from sfumato.dsp.emphasis import EmphasisFilter
-from sfumato.dsp.pll import PilotPLL
+from algo import settings
+from algo.dsp.emphasis import EmphasisFilter
+from algo.dsp.pll import PilotPLL
 
 
 class FmReceiver:
