@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:numpy.org)",
+      "WebFetch(domain:docs.scipy.org)",
+      "WebFetch(domain:wiki.sipeed.com)",
+      "WebFetch(domain:yosyshq.readthedocs.io)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:trabucayre.github.io)"
+    ]
+  }
+}
