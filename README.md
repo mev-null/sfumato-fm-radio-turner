@@ -1,226 +1,124 @@
-This is FPGA-FM-radio project
+# sfumato-fm-radio-turner
+
+> FPGA で動かす FM ステレオラジオ受信機。Python/NumPy で変復調方式を確立し(**algo**)、Tang Nano 9K 向け SystemVerilog に落とし込む(**hdl**)2 トラック構成のプロジェクト。
+
 <img width="2811" height="853" alt="sfumato-radio-v1-0" src="https://github.com/user-attachments/assets/dd557f31-7457-422a-b91d-ca37e6aa2c50" />
 
-# 1.Modeling and Simulation
+[![CI](https://github.com/mev-null/sfumato-fm-radio-turner/actions/workflows/ci.yml/badge.svg)](https://github.com/mev-null/sfumato-fm-radio-turner/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)
+
 ## 概要
-時報の音声ファイルを
-1. FM信号に変調し，
-2. IQ信号に変換,
-4. 最後に音声信号に復調した.
-   
-通信路では，ホワイトノイズ(ガウス雑音)が乗ることを仮定してモデルの構築を行なった.
+
+FM ステレオ放送を受信するデジタルラジオ受信機を作る。送信〜通信路〜受信を丸ごとソフトウェアでモデル化して正しい変復調方式を確立し、その方式をそのまま FPGA(Tang Nano 9K / Gowin GW1NR-9C)へ実装する。
+
+開発は 2 つのトラックで進める。
+
+- **algo** … 先に正しい方式を見つける場(Python/NumPy/SciPy)。
+- **hdl** … 確立した方式をハードに落とす場(SystemVerilog)。
+
+原則として、**algo で検証していない方式は hdl に実装しない**。
+
+## デモ・成果
+
+algo では、FM ステレオの変調・通信路(AWGN)・復調を通したモデルが完成し、音楽信号をそれなりの音質で復調できる。pre/de-emphasis と PLL による搬送波再生まで実装済み。hdl は RTL 実装に着手した段階(進捗は [docs/roadmap.md](docs/roadmap.md))。
 
 ### モデル全体のシミュレーション動画
 
 https://github.com/user-attachments/assets/f829db6a-4b2d-4762-8efc-568c4f685ed2
 
+### 復調音声(ステレオ音楽)
 
-## 1.1 Transmit
-擬似的な音声信号(440Hzの正弦波)を生成し，その信号をFM信号に変調，ガウス雑音を乗せるところまでのモデルとシミュレーションを行なった
+- 変調前: [first_ancem92.wav](https://github.com/user-attachments/files/25324970/first_ancem92.wav)
+- 復調後: [first_ancem92_restored.wav](https://github.com/user-attachments/files/25324963/first_ancem92_restored.wav)
 
-### 音声信号→FM変調
-- アップサンプリングを行い，FM変調を行なった
-- サンプリングには線形補完を利用
-### FM変調信号にガウス雑音を乗せる
-- アップサンプリング済みの信号の電力から，ノイズ信号の電力を計算
-- ノイズ信号の電力からガウス雑音の正規分布を計算
-### 雑音が混じったFM信号を可視化
-<img width="1211" height="811" alt="signal_noisy" src="https://github.com/user-attachments/assets/983cb61c-0654-4bc8-b545-12008f4f4705" />
+### 復調結果の解析(pre/de-emphasis 適用後)
 
-- 直感的で暫定的な理解： キャリア周波数の前後に元信号が含まれている．ガウス雑音を乗せたことで，元信号＋ガウス雑音が周波数特性のピークに存在．SN比を大きくすることでガウス雑音を消す．
-
-## 1.2 Recieve
-FM信号を受け取り，       
-1. 選局 (Mixing): 目的の周波数を0Hz中心に移動
-2. 帯域制限 (Filtering): 信号以外の余計なノイズを除去
-3. 間引き (Decimation): サンプリングレートをRF帯域(2.4MHz)から音声帯域(48kHz)へ変換
-
-を実行してベースバンドIQ信号に変換するまでのモデリングとシミュレーションを行なった
-
-### Mixing
-搬送波周波数分だけ複素平面上で負の方向に回転させる操作を行なった
-
-### ベースバンドIQ信号の可視化
-<img width="1211" height="811" alt="recieved_sign" src="https://github.com/user-attachments/assets/4a3a1f7f-169f-4de6-8bb8-556860d1ed62" />
-
-#### c.f. 最大周波数偏移の修正
-帯域制限を20kHzに設定してシミュレーションを行なった．理由は，出力レートを48kHz(音声帯域)に設定していたため．
-しかし，最大周波数偏移 (Maximum Frequency Deviation)について，日本のFM放送規格に準拠 (+/- 75kHz)して実装していたため，可視化時に期待されれる結果を得られなかった．
-フィルタのカットオフ周波数(帯域制限)を100kHzほどに修正したかったが，ベースバンドIQ信号は48kHzを期待しているため，最大周波数偏移を7.5kHzに落として実装した．
-実際のFMラジオでは，２段階でDecimationを行なっていることを知ったため，今後の実装課題になる．
-[fix: 最大周波数遷移を下げた](https://github.com/mev-null/sfumato-fm-radio-turner/pull/3/changes/afdc3e510589ab221ce63b8b71e9d62133b2f44d)
-
-## 1.3 Demodulation
-IQ信号から位相変化を取り出し，音声に変換した
-### IQ信号→ 位相
-実部と虚部から正接の逆関数で計算
-### 位相→音声情報
-位相を微分し，位相変化を計算．位相変化がそのまま音の周波数の一部になる．
-### 復調された音声を可視化
-<img width="1211" height="811" alt="output3" src="https://github.com/user-attachments/assets/5a5b3f1c-a1d5-492b-9918-5766e2ce95a9" />
-
-それなりに元の信号と同じ形に復元できた．また，周波数特性も440Hzに生じており，妥当．
-
-この時点におけるモデルで時報音声を復調した際の結果は以下の通り．
-
-- 変調前の信号
-[time-tone.wav](https://github.com/user-attachments/files/25239643/time-tone.wav)
-
-- 復調後の信号
-[time-tone_restored.wav](https://github.com/user-attachments/files/25239641/time-tone_restored.wav)
-  (ラジオ特有の雑音が混じっていることが確認できる)
-
-## 1.4 Stereo Multiplexing
-FM変復調に，ステレオ音源が対応できるようになった．
-シミュレーションに使用した信号は，L成分が440Hz, R成分が880Hzのステレオ信号
-<img width="857" height="393" alt="stereo_sine" src="https://github.com/user-attachments/assets/2b5e5257-e11e-4676-8d7c-e58ff5eda417" />
-
-簡易的に，音声信号レート(48kHz)とラジオ波レート(約2.4MHz)の双方向からdecimationする過程において，中間にMPX信号レート(192kHz)を設けた．
-
-### 送信機
-送信信号について，左右の信号からMPX信号を生成する．
-
-#### 手順
-1. 音声信号レートから，MPX信号レートにdecimation
-2. MPX信号レートで上記の規則に従って信号を生成
-3. 信号をRFレートにupsampling
-4. FM変調を行い，IQ信号生成
-<img width="1211" height="811" alt="fm-stereo-signal" src="https://github.com/user-attachments/assets/361cd65f-9424-4ac1-af2d-7238fedf39b6" />
-
-#### MPX信号とは？
-モノラル成分にL+Rの信号を，19kHzにパイロット信号を，38kHzのサブキャリアにL-Rの信号を埋め込んだもの．
-全てで57kHzの帯域幅を必要とする．
-<img width="1189" height="790" alt="mpx_signal" src="https://github.com/user-attachments/assets/adeb4c12-eb41-4f08-af76-472c83ad5d5c" />
-<img width="1489" height="490" alt="mpx-pds" src="https://github.com/user-attachments/assets/bab0122c-3105-4f71-94da-6b07dcd81f6d" />
-19kHzのパイロット信号を利用して，送信機と受信機の時間を同期させる．
-
-### 通信路
-ガウス雑音が乗るとしてモデリング
-<img width="1211" height="811" alt="fm-stereo-signal-awgn" src="https://github.com/user-attachments/assets/86c17e8e-4881-4053-9066-a530c76c38eb" />
-
-### 復調機
-#### MPX信号に復調まで
-1. RF信号をベースバンドのIQ信号にする
-2. RF信号レート帯でIQ信号をMPX信号に復調
-3. RF信号レートからMPX信号レートにdecimation
-<img width="1211" height="811" alt="decimated_signal" src="https://github.com/user-attachments/assets/b5ade06a-ec35-4624-8dae-6d16c4a63fae" />
-
-元信号の形状にかなり一致している．
-#### 復調したMPX信号をステレオ信号に分離
-1. Main(L+R)の信号を抽出．(LPF(15kHz)を通した．)
-2. Sub(L-R)の信号を抽出．
-3. マトリクス回路に通して，二元一次連立方程式を解き，L, R信号を抽出
-4. MPX信号レートから音声信号レートにdecimation
-<img width="1021" height="1035" alt="stereo-decode-process" src="https://github.com/user-attachments/assets/c508d596-df0f-4da8-88ec-f01d4ecb4069" />
-
-#### Sub信号の抽出: DSB-SC（Double Sideband Suppressed Carrier：抑圧搬送波両側波帯）
-1.  L-R成分（変調波）の抽出: MPX信号にBPF(23k~53k) をかける.
-2. 19kHzパイロット信号から38kHz搬送波を再生する．
-3. 検波: フィルタリングしたMPX信号に，再生した 38kHz 搬送波を掛け算する（復調）
-4.  復調した信号にLPF(15kHz) をかけて、音声信号に戻す.
-
-現時点で，音楽の信号を，それなりの音質で復調できるようになった
-
-- 変調前の音学：[first_ancem92.wav](https://github.com/user-attachments/files/25324970/first_ancem92.wav)
-
-- 復調後の音楽：[first_ancem92_restored.wav](https://github.com/user-attachments/files/25324963/first_ancem92_restored.wav)
-
----
-## Audio Credits & License
-
-The audio files used in this project have two different origins:
-
-### Original Composition
-- **"first_ancem92.wav"**
-  - **Composer/Producer:** mev-null
-  - **Copyright:** © 2026 mev-null. All rights reserved.
-  - **Description:** An original piece composed to test the fidelity of the stereo FM demodulation. It blends mathematical precision with aesthetic sensibility.
-
-### Usage License for the Code and Music
-- **Code:** Licensed under the [MIT License](LICENSE).
-- **Music (first_ancem92.wav):** Licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). 
-  - (You are free to share the audio, but you must provide credit, and you cannot use it for commercial purposes or create derivative works.)
-
-## 1.5 Refine Algorithm
-実際に人間がFM放送を聴けるようにフィルター処理などを追加した
-### 1.5.1 pre-emphasis と　de-emphasis の実装
-FM信号は，復調する際に三角関数を時間微分する．位相には周波数情報が含まれているため，微分した結果，復調信号は振幅に比例することになる．
-いま，通信路ではガウス雑音が乗ることを仮定しているが，これは，すべての周波数のノイズが乗ることを意味する．
-したがって，信号は高周波成分になるほど雑音の影響を受けやすくなる．
-さらに，音声は，エネルギー保存則によって，高周波成分ほどエネルギーが小さくなるという特性がある．
-これらの課題を克服するために，以下の処理を行った．
-
-1. 送信機側で，送信信号をHigh-Shelf Filterにかけて，高周波成分を増幅する
-2. 受信機側では，受信信号にLPFにかけて高周波成分をカットする
-
-#### 結果
-結果を分かりやすくするために，ガウス雑音が大きめにかかるモデルを想定してシミュレーションを行った
-- 追加処理前の復調した音楽信号
-<img width="1400" height="1000" alt="ancem92_10db_analysis" src="https://github.com/user-attachments/assets/23bfe13e-03c4-4a58-a298-58803de16a13" />
-
-- 追加処理後の復調した音楽信号
 <img width="1400" height="1000" alt="ancem92_emphasised_10db_analysis" src="https://github.com/user-attachments/assets/9137d37b-cdd3-4cf1-9c2f-9e06f2ef189a" />
 
-高周波数領域をみると，元信号と同じように周波数の増加に伴って振幅が減少するようになった．
-これは、pre-emphasis と　de-emphasisの処理によって，信号の高周波成分がノイズに強くなったこと，三角ノイズを減らせるようになったことを示唆していると考えられる．
-## 1.5.2 PLLの実装
-ステレオ信号の復調において，パイロット信号(19kHz)を使って搬送波(38kHz)を計算する．
-前章までの実装では，簡易的にステレオ信号にBPFをかけてパイロット信号を抽出し，その信号に「二乗法」（三角関数を二乗して，位相を２倍にする）を適応して搬送波を計算していた．
-これは，L-R成分がパイロット信号に依存することを意味する．もしパイロット信号がノイズなどの影響を受けている場合，搬送波にノイズを伝播することになり，ステレオ信号を正しく左右に分離することが難しくなる．
-実際，FMラジオの受信環境では，ドップラー効果や水晶の誤差により，パイロット信号に周波数のステップ入力（一定の周波数ズレ）が必ず生じる．
-この課題を解決するために，以下のブロック図に示す，PLL(Phase Lock Loop)を実装した．
-このシステムの実装により，パイロット信号のタイミングに合わせた，純粋な正弦波を生成できるようになる．この正弦波を搬送波として利用することで，同期検波の精度が向上し，結果，L-R信号をきれいに復元することができる．
- 
-<img width="1935" height="365" alt="PLL-block" src="https://github.com/user-attachments/assets/38084fad-d7c1-4b78-9220-e77ac16c95ce" />
+変復調アルゴリズムの詳しい解説は [docs/algorithm.md](docs/algorithm.md) を参照。
 
-### 1.5.2.1 デジタル2次Type-II PLLの概要
-本システムは，入力を19kHz pilot信号，出力をNCOの位相特性とし，その出力を再び入力側へ戻して誤差を計算する閉ループ（フィードバック制御系）である．
-位相比較器，ループフィルタ(PI)，NCOを通る系の中に積分器が2つ（ループフィルタ内とNCO自身）存在するため，Type-IIに分類される．
-#### システム制御の基礎知識(PI制御)
-実装時点で，システム制御に関する知識がほとんどなかったため，本システムに関連する理解を記す．
-まず，ラジオ受信機において，上記に述べた通り，ドップラー効果や水晶の誤差により，パイロット信号に周波数のステップ入力が生じるため，システムの定常状態に対して，継続的な外乱が加わっていると考えられる．
-したがって，このシステムを安定に保つためには，コントローラーが，ゼロではない一定の値（定常値）であることが要請される，本実装では，以下の2つの制御を組み合わせたPI制御を採用した．
-- P制御（比例制御）：誤差に，Pゲインを掛け算する．力学における，バネのような役割であり，瞬時のズレに対して機敏な反発力を生み出し，過渡応答（スピード）を改善する．
-- I制御（積分制御）：過去の誤差を累積（積分）しIゲインをかける．離散時間において，以下のようにコードで記述できる．
-  ```
-  integrator += i_gain * error
-  ```
-システムの安定性のためには，PI制御の両方が必要となる．仮にP制御のみのシステムの場合，
-```
-control = p_gain * error
-```
-となるが，コントローラがゼロではない一定の値を出力し続けるためには，誤差 ```error``` が常にゼロではない状態を維持しなければならないという自己矛盾に陥る.
-結果として，入力信号に対して位相が常に少しズレた状態となる**定常位相誤差（Steady-State Phase Error）**が生じてしまい，ステレオ信号の正確な分離が不可能になる.
+## 構成(2 トラック)
 
-一方，I制御のみのシステムの場合，
-```
-control = integrator
-```
-となり,P制御のみのシステムにおける自己矛盾を解決することはできる．
-しかし，NCO自体が持つ積分特性と合わさってシステム内に積分器が直列に2つ並ぶ状態（二重積分系）となる．
-これによりシステムは過度な振動（発振）を引き起こしやすく，入力信号の位相変化に機敏に追従できない（過渡応答が悪化する）ため，実装上望ましくない．
-最終的なPI制御のコードを以下に示す．
-```
-control  = p_gain * error + integrator
-```
-#### Gainの決定
-PI制御を採用した場合，システムの安定性は，PゲインとIゲインに依存することになる，２つの係数を，ループ帯域幅(```bandwidth```)と，減衰比```zeta```の二変数を用いて，以下のように決定した．
-```
-wn = 2 * np.pi * bandwidth  # wn: 自然角周波数
-alpha = (2 * zeta * wn) / fs  # P-gain * Ts
-beta = (wn * wn) / (fs * fs)  # I-gain * Ts**2
-```
-#### c.f. Gainの変数変換について
-制御器の伝達関数は，PI制御のため，```p_gain + i_gain /s```，対象系の伝達関数は積分器であるため，```1/s```であるから，PLL全体の開ループ伝達関数は，```(p_gain*s + i_gain)/s**2```で表せる．
-よって，システム全体の閉ループ伝達関数G(s)は，```(p_gain*s + i_gain)/(s**2 + p_gain*s + i_gain)```と導出される．この伝達関数の分母の次数から，「２次遅れ系」のシステムであることがわかり，
-```
-s**2 + 2*zeta*wn*s + wn**2
-```
-と分母の係数比較を行ない，連続時間におけるGainは，
-```
-p_gain = 2*zeta*wn
-i_gain = wn**2
-```
-離散時間において，このGainを決定するために，前進オイラー法を考える．これにより，離散時間のPI制御のGain```alpha```, ```beta```が決定される．
+| トラック | 場所 | 役割 |
+|---|---|---|
+| algo | `src/sfumato/`(Python) | FM ステレオの変調・通信路・復調を NumPy/SciPy でモデル化 |
+| hdl  | `src/hdl/`(SystemVerilog) | algo で確立した方式を Tang Nano 9K 向け RTL に実装 |
 
-### 1.5.2.2 システムの最適化
+主要処理パイプライン(送信 → 通信路 → 受信):
+
+```
+音声(48k) → MPX(192k) → RF(2.304M) → FM変調 → IQ
+   → [AWGN] →
+IQ → 直交復調 → MPX(192k) → PLLで38k再生 → マトリクス分離 → 音声(48k)
+```
+
+信号設計(レート・帯域)と物理定数の正本は `src/sfumato/settings.py`、現状の整理は [docs/architecture.md](docs/architecture.md)。
+
+## リポジトリ構成
+
+```
+src/sfumato/   algo: Python DSP モデル(transmitter / channnel / receiver, dsp/, settings.py)
+src/hdl/       hdl: SystemVerilog(rtl/ tb/ constraints/)— 規約は src/hdl/README.md
+docs/          roadmap / architecture / adr / algorithm
+tests/         algo の品質評価(metrics gate)
+Makefile       algo・hdl のタスクをラップ
+```
+
+## Getting Started
+
+### algo (Python)
+
+前提: [uv](https://docs.astral.sh/uv/) / Python 3.12+。
+
+```bash
+make install   # uv sync で依存と本体を導入
+make run       # FM 変復調シミュレーションを実行(src/sfumato/main.py)
+make fmt       # ruff format + ruff check --fix
+make lint      # ruff check
+```
+
+実行すると `outputs/<name>_restored.wav`(復調音声)と `outputs/<name>_analysis.png`(L/R の時間波形・PSD)が生成される。一連のフローは `/sim-algo` スラッシュコマンドでも実行できる。
+
+### hdl (FPGA, Tang Nano 9K)
+
+ツールチェーンは [oss-cad-suite](https://github.com/YosysHQ/oss-cad-suite-build)。シェルで一度だけ有効化する。
+
+```bash
+source ./activate-cad.sh
+make sim       # verilator でシミュレーション → build/fpga/<TOP>.vcd
+make synth     # 合成(synth → pnr → bitstream は依存で連鎖)
+make load      # 実機 SRAM に書き込み(揮発 / 確認用)
+make fpga-help # FPGA ターゲット一覧
+```
+
+別モジュールを対象にするには `make load TOP=fm_receiver` のように `TOP` を渡す。ビルド規約・ピン参照・デバイス値は [src/hdl/README.md](src/hdl/README.md) が正本。一連のフローは `/fpga` スラッシュコマンドでも実行できる。
+
+## ドキュメント
+
+| 内容 | 参照先 |
+|---|---|
+| アルゴリズム詳細解説(算譜の解説) | [docs/algorithm.md](docs/algorithm.md) |
+| 進捗・フェーズ管理 | [docs/roadmap.md](docs/roadmap.md) |
+| システム構成・信号設計 | [docs/architecture.md](docs/architecture.md) |
+| 設計上の決定(ADR) | [docs/adr/](docs/adr/) |
+| HDL ビルド規約・ピン参照 | [src/hdl/README.md](src/hdl/README.md) |
+| 開発時の作業ガイド | [CLAUDE.md](CLAUDE.md) |
+| 開発ルール | [.claude/rules.md](.claude/rules.md) |
+
+## クレジット・ライセンス
+
+本プロジェクトで使用する音声ファイルには 2 つの由来がある。
+
+### オリジナル楽曲
+
+- **"first_ancem92.wav"**
+  - 作曲・制作: mev-null
+  - 著作権: © 2026 mev-null. All rights reserved.
+  - 概要: ステレオ FM 復調の忠実度を検証するために作曲したオリジナル曲。
+
+### ライセンス
+
+- **コード**: [MIT License](LICENSE)
+- **音楽 (first_ancem92.wav)**: [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)
+  - (共有は自由だが、クレジット表記が必要であり、商用利用および二次創作は不可。)

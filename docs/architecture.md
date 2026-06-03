@@ -31,7 +31,7 @@ FM ステレオ放送の受信機。2 つのトラックで構成する。
 
 ## algo の構成
 
-`src/sfumato/` パッケージ。処理の流れと解説は [README.md](../README.md)、エントリは `main.py`。
+`src/sfumato/` パッケージ。処理の流れと解説は [algorithm.md](algorithm.md)、エントリは `main.py`。
 
 - `transmitter.py` … 音声 → MPX 生成 → アップサンプリング → FM 変調 → IQ 信号(`FmTransmitter.modulate`)。
 - `channnel.py` … 通信路。AWGN 付加(`add_awgn`)。
