@@ -3,7 +3,7 @@
 本リポジトリで作業する際に常に従うルール。CLAUDE.md から参照される。
 各項目は「禁止/必須」を明示する遵守事項であり、背景や設計判断は ADR・architecture.md を正本とする。
 
-このプロジェクトは **algo**(Python DSP モデル: `src/sfumato/`)と **hdl**(SystemVerilog / Tang Nano 9K: `src/hdl/`)の二本立て。両者に共通するルールに加え、章ごとに固有の注意を記す。
+このプロジェクトは **algo**(Python DSP モデル: `src/algo/`)と **hdl**(SystemVerilog / Tang Nano 9K: `src/hdl/`)の二本立て。両者に共通するルールに加え、章ごとに固有の注意を記す。
 
 ## 1. 危険・不可逆な操作(プロジェクト固有)
 
@@ -30,7 +30,7 @@
 ## 3. コーディング
 
 - コメント・ドキュメントは**日本語**で書く(リポジトリ全体の既存方針に合わせる)。
-- **algo (Python)**: ruff に従う。コミット前に `make fmt`(整形 + 自動修正)と `make lint` を通す。物理定数・サンプリングレートは `src/sfumato/settings.py` に集約し、各モジュールへハードコードしない。
+- **algo (Python)**: ruff に従う。コミット前に `make fmt`(整形 + 自動修正)と `make lint` を通す。物理定数・サンプリングレートは `src/algo/settings.py` に集約し、各モジュールへハードコードしない。
 - **hdl (SystemVerilog)**: ファイル名 = トップモジュール名 = `TOP` 変数 を一致させる(Makefile の規約)。テストベンチは `<TOP>_tb.sv`、モジュール名も `<TOP>_tb`。ピン制約は `src/hdl/constraints/tangnano9k.cst`。詳細は [src/hdl/README.md](../src/hdl/README.md)。
 
 ## 4. デバッグ

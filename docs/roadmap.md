@@ -5,6 +5,11 @@
 
 全体の流れ: **algo**(Python で FM 変復調方式を確立)→ **hdl**(Tang Nano 9K へ実装)。
 
+到達ビジョンの全体図は [diagrams/system-architecture.mmd](diagrams/system-architecture.mmd)。
+**MVP(v1.0 当面)= Phase 1–2**(FM をステレオで受信して鳴らす)。ビジョン上段の **適応オーディオ(Phase 3)・コンテキスト認識(Phase 4)は将来**で、方針は ADR が正本。MVP とビジョンの線引きは [architecture.md](architecture.md) を参照。
+
+> **最優先は MVP(Phase 1–2)の完成**。FM をステレオで受信して鳴らすことを最初の達成点とする。Phase 3–4 は構想として記録し、MVP の成立まで着手しない。思想は [philosophy.md](philosophy.md) を参照。
+
 ## Phase 1: algo — モデリングとシミュレーション
 
 Python/NumPy による FM ステレオ変復調モデル。成果の詳細は [README.md](../README.md) を参照。
@@ -17,13 +22,13 @@ Python/NumPy による FM ステレオ変復調モデル。成果の詳細は [R
 - [x] 1.5.2 PLL(デジタル 2 次 Type-II)によるパイロット同期・搬送波再生
 - [ ] 1.5.3 PLL を含む受信系の最適化(README 1.5.2.2 続き)
 - [ ] 1.6 評価基盤の整備(品質を規律ではなく**仕組み**で守る。CI で lint と並ぶゲートにする)
-  - [ ] `add_awgn` の乱数シード固定(再現性。現状 `channnel.py` は未固定で品質ゲート不能)
+  - [ ] `add_awgn` の乱数シード固定(再現性。現状 `radio/channel.py` は未固定で品質ゲート不能)
   - [ ] `pytest` 導入・`tests/` 雛形・`make eval` ターゲット・GitHub Actions(CI)
-  - [ ] メトリクス層 `sfumato/eval/metrics.py`(THD/SINAD・L-R セパレーション・PLL ロック時間 等)
+  - [ ] メトリクス層 `algo/eval/metrics.py`(THD/SINAD・L-R セパレーション・PLL ロック時間 等)
         ※ HDL シミュ出力も同じ関数に通し、algo↔hdl のアクセプタンス・オラクルとして再利用する
 - [ ] 1.7 復調品質の定量評価とゲート化(characterize → `baseline.json` → 回帰ゲート → 絶対しきい値)
 - [ ] 1.8 因果・ストリーミング参照モデル化(判別器を I/Q 差分形へ / フィルタを状態付き逐次形へ)
-- [ ] デシメーション多段化の整理(現状: 係数 12 単段 FIR、`receiver.py`)
+- [ ] デシメーション多段化の整理(現状: 係数 12 単段 FIR、`radio/receiver.py`)
 - [ ] 最大周波数偏移 75kHz での品質検証(settings は復帰済み・定量未確認、README 1.2 c.f. 参照)
 
 > **「完了(x)」は実装済みを表す。方式の確立は 1.7 の定量評価に合格して初めて成立**する(これが Phase 2/HDL の合格基準)。
@@ -65,6 +70,24 @@ algo で確立した各ブロックを RTL 化し、`make sim` で algo の数�
 - [ ] 実機で 81.3 MHz の受信・ステレオ復調確認
 
 > 各ブロックの RTL 化対象・順序、および RF 方式は ADR が正本。確定したらここを更新する。
+
+## Phase 3: 適応オーディオ(Sfumato DSP Core)— 将来
+
+MVP(Phase 1–2)成立後の拡張。ビジョン図 Muscle 段の Sfumato DSP Core(Adaptive EQ / Compressor / Ambience)を algo で確立してから hdl へ落とす(二本立ての原則は不変)。エフェクトは固定または手動パラメータで駆動し、AI は用いない。用語・責務構成は [architecture.md](architecture.md)、思想は [philosophy.md](philosophy.md) を参照。
+
+- [ ] 適応エフェクト(EQ / Compressor / Ambience)を algo でモデル化・評価
+- [ ] パラメータ制御 I/F(Register Bus / レジスタ書き換え方式)を定義 ⇒ Brain と疎結合にする前提([adr/adr-003-brain-implementation-approach.md](adr/adr-003-brain-implementation-approach.md))
+- [ ] 確立したエフェクトを RTL 化し、Muscle 経路に挿入
+
+## Phase 4: コンテキスト認識(Brain)— 将来
+
+ビジョン図上段の Brain(マイク → 特徴量 → 推論 → パラメータ制御)。環境に応じて Phase 3 のエフェクトを動的に "Morphing" する。**実装方式は未決**([adr/adr-003-brain-implementation-approach.md](adr/adr-003-brain-implementation-approach.md))で、MVP では着手しない。
+
+- [ ] マイク入力(I2S Rx)+ 特徴量(FFT / 帯域パワー等)を algo で試作
+- [ ] コンテキスト判定をまず軽量ヒューリスティクス / 小規模分類器で実装(大規模 NN は範囲外候補)
+- [ ] 実装方式(専用 RTL / ソフトコア / HLS)を ADR-003 で確定し、Register Bus 経由で Phase 3 を制御
+
+> Phase 3 / 4 はビジョン段階。着手前に該当 ADR(003 / 004)を Proposed → Accepted へ更新し、方式を確定してから進める。
 
 ## ハードウェア調達(調達タイミングと候補)
 

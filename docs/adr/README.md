@@ -14,6 +14,8 @@ algo(信号処理方式)・hdl(回路実装方式)のどちらの決定もここ
 |---|---|---|---|
 | [000](adr-000-template.md) | テンプレート | Template | - |
 | [001](adr-001-rf-frontend-low-if-adc.md) | [hdl] FM RF フロントエンド = 低IF + 高速ADC(方式A) | Accepted | 2026-06-03 |
+| [002](adr-002-audio-output-sigma-delta-dac.md) | [hdl] 音声出力 = 自作 ΣΔ DAC(MVP)、I2S 外部 DAC は任意上位 | Proposed | 2026-06-04 |
+| [003](adr-003-brain-implementation-approach.md) | [hdl] コンテキスト認識(Brain)の実装方式 | Proposed | 2026-06-04 |
 
 ## 新しい ADR の書き方
 
