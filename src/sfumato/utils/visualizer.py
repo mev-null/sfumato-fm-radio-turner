@@ -88,9 +88,7 @@ def plot_signal_analysis(
 
     # 搬送波マーカー
     if carrier_freq is not None:
-        ax_freq.axvline(
-            x=carrier_freq / 1e3, color="r", linestyle=":", label=f"Carrier"
-        )
+        ax_freq.axvline(x=carrier_freq / 1e3, color="r", linestyle=":", label="Carrier")
         if not is_complex:
             ax_freq.axvline(x=-carrier_freq / 1e3, color="r", linestyle=":", alpha=0.5)
         ax_freq.legend()

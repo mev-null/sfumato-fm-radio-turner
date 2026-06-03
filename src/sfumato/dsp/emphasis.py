@@ -29,8 +29,6 @@ class EmphasisFilter:
         """
         デジタル・プリエンファシス/ディエンファシスの係数計算
         """
-        fc = 1.0 / (2.0 * np.pi * self.tau)
-
         if mode == "pre":
             # --- Pre-emphasis (High-Shelf Filter) ---
 

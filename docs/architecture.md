@@ -57,6 +57,8 @@ IQ → 直交復調 → MPX(192k) → PLLで38k再生 → マトリクス分離 
 - `constraints/tangnano9k.cst` … ピン制約。
 - ビルドはルートの Makefile FPGA セクション(yosys → nextpnr-himbaechel → gowin_pack → openFPGALoader)。
 
+RF 入力方式は **低IF + 高速 ADC 1個で実数標本化**(方式A、[adr/adr-001-rf-frontend-low-if-adc.md](adr/adr-001-rf-frontend-low-if-adc.md))。アンテナ → BPF/LNA → ミキサ(LO: Si5351)→ 低IF(`CARRIER_FREQ` = 250 kHz に整合)→ 高速 ADC(`RF_FS` = 2.304 MSPS 相当を狙う)→ FPGA。これにより algo の受信器(digital mix で選局する RF 段)をそのまま RTL 化の基準にできる。音声出力は FPGA 内製の ΣΔ DAC → RC フィルタ → イヤホンジャック。
+
 algo の各ブロックを RTL へどの順序・粒度で落とすかは未確定。確定次第 ADR を追加し、対応表をここに追記する。
 
 ## algo ↔ hdl 対応表

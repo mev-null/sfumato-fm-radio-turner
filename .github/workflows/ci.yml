@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  algo:
+    name: algo (lint + metrics gate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync dependencies
+        run: uv sync
+
+      - name: Format check (ruff)
+        run: make fmt-check
+
+      - name: Lint (ruff)
+        run: make lint
+
+      - name: Eval (metrics gate)
+        run: make eval

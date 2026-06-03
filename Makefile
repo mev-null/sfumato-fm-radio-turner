@@ -24,10 +24,20 @@ fmt:
 	$(UV) run ruff format src
 	$(UV) run ruff check --fix src
 
+.PHONY: fmt-check
+fmt-check:
+	@echo "Checking formatting (non-destructive)..."
+	$(UV) run ruff format --check src
+
 .PHONY: lint
 lint:
 	@echo "Linting code..."
 	$(UV) run ruff check src
+
+.PHONY: eval
+eval:
+	@echo "Evaluating algo quality (metrics gate)..."
+	$(UV) run pytest -q
 
 .PHONY: clean
 clean:

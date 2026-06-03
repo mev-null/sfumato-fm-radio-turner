@@ -13,6 +13,7 @@ algo(信号処理方式)・hdl(回路実装方式)のどちらの決定もここ
 | No. | タイトル | ステータス | 日付 |
 |---|---|---|---|
 | [000](adr-000-template.md) | テンプレート | Template | - |
+| [001](adr-001-rf-frontend-low-if-adc.md) | [hdl] FM RF フロントエンド = 低IF + 高速ADC(方式A) | Accepted | 2026-06-03 |
 
 ## 新しい ADR の書き方
 
