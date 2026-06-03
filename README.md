@@ -126,7 +126,7 @@ FM変復調に，ステレオ音源が対応できるようになった．
 - 復調後の音楽：[first_ancem92_restored.wav](https://github.com/user-attachments/files/25324963/first_ancem92_restored.wav)
 
 ---
-## 🎧 Audio Credits & License
+## Audio Credits & License
 
 The audio files used in this project have two different origins:
 
