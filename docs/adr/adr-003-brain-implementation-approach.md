@@ -25,6 +25,9 @@
 3. **HLS(C/C++ → RTL)**
    - 利点: C 記述から合成。アルゴリズム反復が速い。
    - 欠点: Gowin 系での HLS 整備コスト。生成 RTL の面積・検証性に不確実性。
+4. **外部エッジ AI コプロセッサ(Sony Spresense 等)**
+   - 利点: マイク+音声 DSP+エッジ AI を一基板に閉じられ、反復が速く FPGA 面積を食わない。身体ループ(知覚→理解→変容)を一箇所に集約できる。
+   - 欠点: FPGA に閉じない。チップ間 I/F・依存ツールチェーンが増える。詳細・スコープ(適応オーディオの実装基板も含む)は [adr-004](adr-004-sfumato-core-substrate-spresense.md) が扱う。
 
 ## 決定
 
@@ -32,7 +35,7 @@
 
 - **MVP では Brain を作らない。** Muscle 経路(FM 受信 → 復調 → 出力)を優先する。
 - 先に **Muscle 側の制御 I/F(Register Bus / パラメータ書き換え方式)を Phase 3 で定義**し、Brain はそのレジスタを操作する主体として後から差し替え可能にする(疎結合)。
-- Brain 着手(Phase 4)時に、本 ADR を更新して案1〜3 から確定する。リソース制約上、当面は**専用 RTL もしくは軽量ソフトコア**が有力。大規模 NN は範囲外候補(スコープは [../roadmap.md](../roadmap.md) Phase 4 を参照)。
+- Brain 着手(Phase 4)時に、本 ADR を更新して案1〜4 から確定する。FPGA に閉じるならリソース制約上**専用 RTL もしくは軽量ソフトコア**が有力。大規模 NN は範囲外候補(スコープは [../roadmap.md](../roadmap.md) Phase 4 を参照)。外部 DSP(案4 / Spresense)に出す場合は適応オーディオの実装基板と一体で [adr-004](adr-004-sfumato-core-substrate-spresense.md) として検討する。
 
 ## 影響
 
