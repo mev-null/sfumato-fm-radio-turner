@@ -1,6 +1,6 @@
 # CLAUDE.md — sfumato-fm-radio-turner
 
-FPGA で動かす FM ラジオ受信機。**algo**(Python/NumPy による FM 変復調アルゴリズムのモデリング・シミュレーション)で方式を確立し、確立した方式を **hdl**(SystemVerilog / Tang Nano 9K)へ落とし込む二本立てのプロジェクト。本ファイルは開発時の作業ガイド(環境・コマンド・規約)を扱う。
+FPGA で動かす FM ラジオ受信機。**algo**(Python/NumPy による FM 変復調アルゴリズムのモデリング・シミュレーション)で方式を確立し、確立した方式を **hdl**(SystemVerilog / Tang Nano 9K)へ落とし込む 2 トラック構成のプロジェクト。本ファイルは開発時の作業ガイド(環境・コマンド・規約)を扱う。
 
 各内容の正本は下記のとおり。本ファイルでは正本の内容を繰り返さず、リンクで参照する。
 
@@ -16,7 +16,7 @@ FPGA で動かす FM ラジオ受信機。**algo**(Python/NumPy による FM 変
 
 方針に関わる決定は ADR が正本。本ファイルでは繰り返さない。
 
-## 二本立ての構成
+## 2 トラック構成
 
 - **algo**: `src/algo/`(Python パッケージ)。FM ステレオの変調・通信路・復調を NumPy/SciPy でモデル化する。物理定数・レートは `src/algo/settings.py` が単一の出どころ。
 - **hdl**: `src/hdl/`(SystemVerilog)。algo で確立した方式を Tang Nano 9K(Gowin GW1NR-9C)向け RTL に実装する。ビルド規約・ピン参照は [src/hdl/README.md](src/hdl/README.md) が正本。
@@ -66,6 +66,7 @@ make fpga-help # FPGA ターゲット一覧
 
 ## 作業の進め方(規約)
 
+- **作業を始める前に [.claude/rules.md](.claude/rules.md) を読み、記載の遵守事項(禁止/必須)に常に従う。** 危険・不可逆な操作、Git 運用、コーディング、デバッグ方針などの正本は rules.md。本ファイルと矛盾する場合は rules.md を優先する。
 - **進捗を動かしたら** [docs/roadmap.md](docs/roadmap.md) を直接更新する。進捗の状態は roadmap が正本。
 - **方針に関わる判断**が出たら、コードや roadmap ではなく **新しい ADR を追加**して決める([docs/adr/README.md](docs/adr/README.md) の書き方に従う)。
 - **信号設計(レート・帯域・方式)や algo↔hdl の対応が確定したら** architecture.md に反映する。algo の数値は `settings.py`、hdl の規約は `src/hdl/README.md` を出どころとし、architecture.md からはそれらを参照して重複させない。

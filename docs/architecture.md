@@ -51,7 +51,7 @@ Brain / Muscle の二層は思想(思考する身体・境界を溶かす)を構
 
 ## algo の構成
 
-`src/algo/` パッケージ。処理の流れと解説は [README.md](../README.md)、エントリは `main.py`。責務別に構成する(基盤 = `radio/`、将来の sfumato 核 = `morph/` `context/` を予約)。
+`src/algo/` パッケージ。処理の流れと解説は [algorithm.md](algorithm.md)、エントリは `main.py`。責務別に構成する(基盤 = `radio/`、将来の sfumato 核 = `morph/` `context/` を予約)。
 
 - `radio/` … 【基盤】FM 放送リンク。
   - `transmitter.py` … 音声 → MPX 生成 → アップサンプリング → FM 変調 → IQ 信号(`FmTransmitter.modulate`)。

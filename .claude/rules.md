@@ -3,7 +3,7 @@
 本リポジトリで作業する際に常に従うルール。CLAUDE.md から参照される。
 各項目は「禁止/必須」を明示する遵守事項であり、背景や設計判断は ADR・architecture.md を正本とする。
 
-このプロジェクトは **algo**(Python DSP モデル: `src/algo/`)と **hdl**(SystemVerilog / Tang Nano 9K: `src/hdl/`)の二本立て。両者に共通するルールに加え、章ごとに固有の注意を記す。
+このプロジェクトは **algo**(Python DSP モデル: `src/algo/`)と **hdl**(SystemVerilog / Tang Nano 9K: `src/hdl/`)の 2 トラック構成。両者に共通するルールに加え、章ごとに固有の注意を記す。
 
 ## 1. 危険・不可逆な操作(プロジェクト固有)
 
@@ -14,7 +14,7 @@
 
 - 無許可でコミットしない。
 - `main` に直接 push しない。必ずブランチを切り、PR を作成する。
-- author は `Nemoto Mizuki <n.mizuki.040618@gmail.com>`(local の `user.name` / `user.email` を使用)。**`Co-Authored-By` 行は付けない**。
+- author は `mev-null <190558379+mev-null@users.noreply.github.com>`。**`Co-Authored-By` 行は付けない**。
 
 ### コミットメッセージ
 
