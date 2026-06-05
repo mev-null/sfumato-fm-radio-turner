@@ -39,6 +39,11 @@ eval:
 	@echo "Evaluating algo quality (metrics gate)..."
 	$(UV) run pytest -q
 
+.PHONY: characterize
+characterize:
+	@echo "Characterizing demod quality -> baseline.json ..."
+	PYTHONPATH=src $(UV) run python -m algo.eval.characterize --update
+
 .PHONY: clean
 clean:
 	@echo "Cleaning..."

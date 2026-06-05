@@ -61,3 +61,26 @@ DEFAULT_SNR_DB = 40.0
 
 # シミュレーション入力音源
 INPUT_FILE = "first_ancem92.wav"
+
+
+# --- 品質評価・ゲート (roadmap 1.7) ---
+# 方針・しきい値の根拠は docs/adr/adr-005-demod-quality-gate.md が正本。
+
+# characterize の測定条件(変えると baseline は無効)
+EVAL_TONE_FREQ = 1_000.0  # 評価トーン [Hz]: コヒーレント (48000/1000=48 周期)
+EVAL_DURATION_S = 1.0  # 測定長 [秒]
+EVAL_SNR_DB = DEFAULT_SNR_DB  # 評価時の SN比 [dB]
+EVAL_SEED = 12_345  # AWGN シード(再現性)
+
+# 絶対しきい値ゲート(目標 = 市販製品スペック。None はスキップ)
+THD_MAX = 0.003  # THD 上限 [線形比]
+SEPARATION_MIN_DB = 42.0  # L-R セパレーション下限 [dB]
+SINAD_MIN_DB = 75.0  # SINAD 下限 [dB]
+PLL_LOCK_MAX_S = None  # PLL ロック時間上限 [秒](観測値から確定)
+
+# PLL ロック時間メトリクスのパラメータ(None ならロック計測をスキップ)
+PLL_LOCK_TOL = None  # ロック判定の |error| 上限
+PLL_LOCK_HOLD_SAMPLES = None  # ロック継続とみなす連続サンプル数
+
+# 回帰ゲートの許容幅(ハードゲート。環境差ドリフトの吸収分)
+REGRESSION_TOL = 0.02  # 許容幅 [割合]: 2%

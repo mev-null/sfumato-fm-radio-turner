@@ -27,6 +27,18 @@ Python/NumPy による FM ステレオ変復調モデル。成果の詳細は [R
   - [x] メトリクス層 `algo/eval/metrics.py`(THD/SINAD・L-R セパレーション・PLL ロック時間)— 契約テスト 5 ケース green
         ※ HDL シミュ出力も同じ関数に通し、algo↔hdl のアクセプタンス・オラクルとして再利用する
 - [ ] 1.7 復調品質の定量評価とゲート化(characterize → `baseline.json` → 回帰ゲート → 絶対しきい値)
+  - [x] characterize ハーネス(決定論パイプライン `eval/harness.py` / 集計 `eval/characterize.py`)
+  - [x] `baseline.json` 機構(`make characterize` で生成、`schema_version`/`conditions` 付き)
+  - [x] 回帰ゲート(ハード)・絶対しきい値ゲート(`tests/test_quality_gate.py`、`make eval` に同梱)
+  - [x] 方針を ADR-005 で確定([adr/adr-005-demod-quality-gate.md](adr/adr-005-demod-quality-gate.md))
+  - [x] 絶対しきい値の目標を市販製品スペック(Sony ST-5130)に設定 — THD ≤0.3% / セパレーション ≥42dB / S/N ≥75dB
+  - [ ] **ギャップを詰める**(現状 THD 1.45% / SINAD 32dB / セパレーション 1.67dB)。特にセパレーションは目標から約 40dB 不足 → 1.5.3・`_stereo_decode` の作り込み対象
+  - [ ] PLL ロック tol/hold の確定(観測ログから `settings.py` を埋める)
+
+  > 運用(ラチェット): 回帰ゲートが床を守り、Sony 絶対ゲートは strict xfail で目標を追跡する。
+  > アルゴが各メトリクスで Sony 仕様に到達すると xpass(strict→fail)で「ハードゲートへ昇格」を通知。
+  > **1.7 合格 = Sony 絶対ゲートが全て昇格しきった状態**(= 方式確立 = Phase 2/HDL 合格基準)。
+  > 改善したら `make characterize` で baseline の床を上げ直す。
 - [ ] 1.8 因果・ストリーミング参照モデル化(判別器を I/Q 差分形へ / フィルタを状態付き逐次形へ)
 - [ ] デシメーション多段化の整理(現状: 係数 12 単段 FIR、`radio/receiver.py`)
 - [ ] 最大周波数偏移 75kHz での品質検証(settings は復帰済み・定量未確認、README 1.2 c.f. 参照)
