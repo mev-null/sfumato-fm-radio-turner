@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import signal
-from sfumato import settings
+from algo import settings
 
 
 class EmphasisFilter:
@@ -29,8 +29,6 @@ class EmphasisFilter:
         """
         デジタル・プリエンファシス/ディエンファシスの係数計算
         """
-        fc = 1.0 / (2.0 * np.pi * self.tau)
-
         if mode == "pre":
             # --- Pre-emphasis (High-Shelf Filter) ---
 

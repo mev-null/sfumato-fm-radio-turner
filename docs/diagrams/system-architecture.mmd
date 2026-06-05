@@ -1,3 +1,7 @@
+%% sfumato — System Architecture (North Star / 全体ビジョン)
+%% 思想(Brain/Muscle = 思考する身体、Morphing = 境界を溶かす)は docs/philosophy.md が正本。
+%% MVP との線引きは docs/architecture.md / docs/roadmap.md、RF 方式は ADR-001、数値は settings.py が正本。
+%% MVP(当面)= Muscle 経路(RF→復調→自作 ΣΔ DAC)。Brain と Sfumato DSP Core は将来(Phase 3-4)。
 graph LR
     %% --- クラス定義 ---
     classDef default fill:#1a237e,stroke:#fff,stroke-width:2px,color:#fff;
@@ -5,19 +9,21 @@ graph LR
     classDef verilog fill:#f57f17,stroke:#ffca28,stroke-width:2px,color:#000;
     classDef cpp fill:#1b5e20,stroke:#66bb6a,stroke-width:2px,color:#fff;
     classDef bus fill:none,stroke:#fff,stroke-dasharray: 5 5,color:#fff;
-    
+    classDef future fill:#1a237e,stroke:#9fa8da,stroke-width:2px,stroke-dasharray: 6 4,color:#fff;
+
     classDef label fill:none,stroke:none,color:#fff,font-size:18px,font-weight:bold;
 
-    %% --- 外部ハードウェア ---
+    %% --- 外部ハードウェア(入力)---
     subgraph Inputs
         direction TB
         %% ラベルノード
         Lb_In["Inputs"]:::label
-        
-        Antenna(Loop Antenna):::hw
+
+        Antenna(Wire Antenna ~75cm):::hw
+        RF["RF Front-End<br/>BPF / LNA / Mixer<br/>LO: Si5351"]:::hw
+        ADC[ADC: AD9226<br/>12bit / 低IF 実数標本化]:::hw
         Mic(MEMS Mic):::hw
-        ADC[ADC: AD9226]:::hw
-        
+
         %% 配置調整 (ラベルの下にアンテナ)
         Lb_In ~~~ Antenna
     end
@@ -27,52 +33,52 @@ graph LR
         direction TB
         %% FPGA全体のラベル
         Lb_FPGA["Tang Nano 9K: System Architecture"]:::label
-        
-        %% 上段: 知能
+
+        %% 上段: 知能(将来 / Phase 3-4)
         subgraph Brain
             direction LR
             %% ラベルを左端に配置
-            Lb_Brain["Context Awareness Engine"]:::label
-            
-            I2S_In[I2S Rx]:::cpp
-            Feat[FFT / Feature]:::cpp
-            AI[[Edge AI Inference]]:::cpp
-            Control[Parameter Controller]:::cpp
-            
+            Lb_Brain["Context Awareness Engine (将来)"]:::label
+
+            I2S_In[I2S Rx]:::future
+            Feat[FFT / Feature]:::future
+            AI[[Edge AI Inference]]:::future
+            Control[Parameter Controller]:::future
+
             %% ラベル -> 最初の要素 (非表示リンク)
             Lb_Brain ~~~ I2S_In
         end
 
-        %% 下段: 信号処理
+        %% 下段: 信号処理(MVP の本線)
         subgraph Muscle
             direction LR
             %% ラベルを左端に配置
             Lb_Muscle["Adaptive Audio Path"]:::label
-            
+
             Driver[ADC Driver]:::verilog
             DDC[DDC / Demod]:::verilog
-            
+
             subgraph Sfumato
                 direction LR
                 %% ラベル
-                Lb_Sfu["Sfumato DSP Core"]:::label
-                
-                AdaptiveEQ[Adaptive EQ]:::verilog
-                Comp[Compressor]:::verilog
-                Reverb[Ambience]:::verilog
-                
+                Lb_Sfu["Sfumato DSP Core (将来)"]:::label
+
+                AdaptiveEQ[Adaptive EQ]:::future
+                Comp[Compressor]:::future
+                Reverb[Ambience]:::future
+
                 Lb_Sfu ~~~ AdaptiveEQ
             end
-            
-            I2S_Out[I2S Tx]:::verilog
-            
+
+            SDM[ΣΔ DAC<br/>自作 1bit]:::verilog
+
             %% ラベル -> 最初の要素
             Lb_Muscle ~~~ Driver
         end
 
-        %% バス
+        %% バス(将来: AI がパラメータを動的制御)
         RegBus((Register Bus)):::bus
-        
+
         %% FPGAラベルと中身の位置関係
         Lb_FPGA ~~~ Brain
     end
@@ -81,26 +87,30 @@ graph LR
     subgraph Outputs
         direction TB
         Lb_Out["Outputs"]:::label
-        DAC[DAC / Amp]:::hw
-        Lb_Out ~~~ DAC
+        RCF[RC LPF]:::hw
+        Jack(Earphone Jack):::hw
+        Lb_Out ~~~ RCF
     end
 
-    %% --- 接続 ---
-    Antenna --> ADC
+    %% --- 接続(MVP 本線)---
+    Antenna --> RF
+    RF --> ADC
     ADC --> Driver
     Driver --> DDC
     DDC --> AdaptiveEQ
     AdaptiveEQ --> Comp
     Comp --> Reverb
-    Reverb --> I2S_Out
-    I2S_Out --> DAC
+    Reverb --> SDM
+    SDM --> RCF
+    RCF --> Jack
 
+    %% --- 接続(将来: コンテキスト認識 → モーフィング)---
     Mic --> I2S_In
     I2S_In --> Feat
     Feat --> AI
     AI --> Control
     Control -- Morphing --> RegBus
-    
+
     RegBus -.-> AdaptiveEQ
     RegBus -.-> Comp
     RegBus -.-> Reverb

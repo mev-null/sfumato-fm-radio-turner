@@ -1,17 +1,16 @@
 import numpy as np
 import os
-import sys
 import time
 import matplotlib.pyplot as plt
 
-from sfumato import settings
-from sfumato.transmitter import FmTransmitter
-from sfumato.receiver import FmReceiver
-from sfumato.channnel import add_awgn
-from sfumato.component.radio_ui import RadioUI
-from sfumato.utils.load_and_preprocess_wav import load_and_preprocess_wav
-from sfumato.utils.output_audio import save_audio
-from sfumato.utils.audio_source import AudioSource
+from algo import settings
+from algo.radio.transmitter import FmTransmitter
+from algo.radio.receiver import FmReceiver
+from algo.radio.channel import add_awgn
+from algo.component.radio_ui import RadioUI
+from algo.utils.load_and_preprocess_wav import load_and_preprocess_wav
+from algo.utils.output_audio import save_audio
+from algo.utils.audio_source import AudioSource
 
 
 def main():

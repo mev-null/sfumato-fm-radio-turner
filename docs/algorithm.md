@@ -1,7 +1,7 @@
 # アルゴリズム解説(algo モデリング記録)
 
 algo(Python/NumPy)で FM ステレオ変復調方式を確立する過程の記録。
-全体像は [../README.md](../README.md)、信号設計の現状は [architecture.md](architecture.md)、物理定数・レートは `../src/sfumato/settings.py` を参照。
+全体像は [../README.md](../README.md)、信号設計の現状は [architecture.md](architecture.md)、物理定数・レートは `../src/algo/settings.py` を参照。
 
 ## 概要
 

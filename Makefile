@@ -16,7 +16,7 @@ clean-env:
 .PHONY: run
 run:
 	@echo "Running simulation..."
-	$(UV) run src/sfumato/main.py
+	$(UV) run src/algo/main.py
 
 .PHONY: fmt
 fmt:
@@ -24,10 +24,20 @@ fmt:
 	$(UV) run ruff format src
 	$(UV) run ruff check --fix src
 
+.PHONY: fmt-check
+fmt-check:
+	@echo "Checking formatting (non-destructive)..."
+	$(UV) run ruff format --check src
+
 .PHONY: lint
 lint:
 	@echo "Linting code..."
 	$(UV) run ruff check src
+
+.PHONY: eval
+eval:
+	@echo "Evaluating algo quality (metrics gate)..."
+	$(UV) run pytest -q
 
 .PHONY: clean
 clean:
@@ -67,6 +77,8 @@ SIM_SRCS  := $(wildcard $(RTL_DIR)/*.sv) $(wildcard $(TB_DIR)/*.sv)
 DEVICE    := GW1NR-LV9QN88PC6/I5
 # gowin_pack(apicula)用デバイス名
 PACK_DEV  := GW1N-9C
+# nextpnr-himbaechel 用ファミリ(GW1N-9 系は必須)
+FAMILY    := GW1N-9C
 # openFPGALoader 用ボード名
 BOARD     := tangnano9k
 
@@ -95,7 +107,7 @@ $(PNR): $(JSON) $(CST)
 	@echo "Place & Route (nextpnr-himbaechel)..."
 	$(CAD_ENV) && nextpnr-himbaechel \
 		--json $(JSON) --write $@ \
-		--device "$(DEVICE)" --vopt cst=$(CST)
+		--device "$(DEVICE)" --vopt family=$(FAMILY) --vopt cst=$(CST)
 
 .PHONY: bitstream
 bitstream: $(BITSTREAM)       ## ビットストリーム生成 (.fs)

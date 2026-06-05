@@ -42,7 +42,7 @@ https://github.com/user-attachments/assets/f829db6a-4b2d-4762-8efc-568c4f685ed2
 
 | トラック | 場所 | 役割 |
 |---|---|---|
-| algo | `src/sfumato/`(Python) | FM ステレオの変調・通信路・復調を NumPy/SciPy でモデル化 |
+| algo | `src/algo/`(Python) | FM ステレオの変調・通信路・復調を NumPy/SciPy でモデル化 |
 | hdl  | `src/hdl/`(SystemVerilog) | algo で確立した方式を Tang Nano 9K 向け RTL に実装 |
 
 主要処理パイプライン(送信 → 通信路 → 受信):
@@ -53,12 +53,12 @@ https://github.com/user-attachments/assets/f829db6a-4b2d-4762-8efc-568c4f685ed2
 IQ → 直交復調 → MPX(192k) → PLLで38k再生 → マトリクス分離 → 音声(48k)
 ```
 
-信号設計(レート・帯域)と物理定数の正本は `src/sfumato/settings.py`、現状の整理は [docs/architecture.md](docs/architecture.md)。
+信号設計(レート・帯域)と物理定数の正本は `src/algo/settings.py`、現状の整理は [docs/architecture.md](docs/architecture.md)。
 
 ## リポジトリ構成
 
 ```
-src/sfumato/   algo: Python DSP モデル(transmitter / channnel / receiver, dsp/, settings.py)
+src/algo/   algo: Python DSP モデル(transmitter / channnel / receiver, dsp/, settings.py)
 src/hdl/       hdl: SystemVerilog(rtl/ tb/ constraints/)— 規約は src/hdl/README.md
 docs/          roadmap / architecture / adr / algorithm
 tests/         algo の品質評価(metrics gate)
@@ -73,7 +73,7 @@ Makefile       algo・hdl のタスクをラップ
 
 ```bash
 make install   # uv sync で依存と本体を導入
-make run       # FM 変復調シミュレーションを実行(src/sfumato/main.py)
+make run       # FM 変復調シミュレーションを実行(src/algo/main.py)
 make fmt       # ruff format + ruff check --fix
 make lint      # ruff check
 ```

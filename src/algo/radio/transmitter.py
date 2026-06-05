@@ -2,8 +2,8 @@
 import numpy as np
 from scipy import signal
 
-from sfumato import settings
-from sfumato.dsp.emphasis import EmphasisFilter
+from algo import settings
+from algo.dsp.emphasis import EmphasisFilter
 
 
 class FmTransmitter:

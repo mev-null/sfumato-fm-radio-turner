@@ -6,6 +6,7 @@ FPGA で動かす FM ラジオ受信機。**algo**(Python/NumPy による FM 変
 
 | 内容 | 正本 |
 |---|---|
+| 思想・哲学(sfumato / 身体性 / 思考する身体) | [docs/philosophy.md](docs/philosophy.md) |
 | 進捗・フェーズ管理 | [docs/roadmap.md](docs/roadmap.md) |
 | 設計上の決定(ADR) | [docs/adr/](docs/adr/) |
 | システム構成・信号設計(algo / hdl) | [docs/architecture.md](docs/architecture.md) |
@@ -17,7 +18,7 @@ FPGA で動かす FM ラジオ受信機。**algo**(Python/NumPy による FM 変
 
 ## 2 トラック構成
 
-- **algo**: `src/sfumato/`(Python パッケージ)。FM ステレオの変調・通信路・復調を NumPy/SciPy でモデル化する。物理定数・レートは `src/sfumato/settings.py` が単一の出どころ。
+- **algo**: `src/algo/`(Python パッケージ)。FM ステレオの変調・通信路・復調を NumPy/SciPy でモデル化する。物理定数・レートは `src/algo/settings.py` が単一の出どころ。
 - **hdl**: `src/hdl/`(SystemVerilog)。algo で確立した方式を Tang Nano 9K(Gowin GW1NR-9C)向け RTL に実装する。ビルド規約・ピン参照は [src/hdl/README.md](src/hdl/README.md) が正本。
 - 両者は独立にビルド・テストできる。algo を「先に正しい方式を見つける場」、hdl を「それをハードに落とす場」として扱い、algo で確定した数値・方式を hdl 実装の根拠にする。
 
@@ -43,7 +44,7 @@ FPGA で動かす FM ラジオ受信機。**algo**(Python/NumPy による FM 変
 ```bash
 # --- algo (Python) ---
 make install   # uv sync で依存と本体を導入
-make run       # FM 変復調シミュレーションを実行 (src/sfumato/main.py)
+make run       # FM 変復調シミュレーションを実行 (src/algo/main.py)
 make fmt       # ruff format + ruff check --fix
 make lint      # ruff check
 

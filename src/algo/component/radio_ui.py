@@ -108,7 +108,6 @@ ____) || |     | |__| || |  | |/ ____ \    | |   | |__| |
         # 1. ステータス表示 (STEREOランプなど)
         status = f"{RadioUI.RED}● STEREO{RadioUI.RESET}   {RadioUI.GREEN}● TUNED{RadioUI.RESET}   {RadioUI.YELLOW}80.0 MHz{RadioUI.RESET}"
         # ANSIエスケープシーケンスを含むので長さ計算を調整して中央寄せ
-        padding = 24  # 手動調整 (色の文字数分)
         print(
             f"{RadioUI.CYAN}║{RadioUI.RESET}   {status}      {RadioUI.CYAN}║{RadioUI.RESET}"
         )
