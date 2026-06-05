@@ -21,10 +21,10 @@ Python/NumPy による FM ステレオ変復調モデル。成果の詳細は [R
 - [x] 1.5.1 pre-emphasis / de-emphasis(高域のノイズ耐性向上)
 - [x] 1.5.2 PLL(デジタル 2 次 Type-II)によるパイロット同期・搬送波再生
 - [ ] 1.5.3 PLL を含む受信系の最適化(README 1.5.2.2 続き)
-- [ ] 1.6 評価基盤の整備(品質を規律ではなく**仕組み**で守る。CI で lint と並ぶゲートにする)
-  - [ ] `add_awgn` の乱数シード固定(再現性。現状 `radio/channel.py` は未固定で品質ゲート不能)
-  - [ ] `pytest` 導入・`tests/` 雛形・`make eval` ターゲット・GitHub Actions(CI)
-  - [ ] メトリクス層 `algo/eval/metrics.py`(THD/SINAD・L-R セパレーション・PLL ロック時間 等)
+- [x] 1.6 評価基盤の整備(品質を規律ではなく**仕組み**で守る。CI で lint と並ぶゲートにする)
+  - [x] `add_awgn` の乱数シード固定(再現性。`radio/channel.py` は `rng` 注入式で固定可能)
+  - [x] `pytest` 導入・`tests/` 雛形・`make eval` ターゲット・GitHub Actions(CI: fmt-check + lint + eval)
+  - [x] メトリクス層 `algo/eval/metrics.py`(THD/SINAD・L-R セパレーション・PLL ロック時間)— 契約テスト 5 ケース green
         ※ HDL シミュ出力も同じ関数に通し、algo↔hdl のアクセプタンス・オラクルとして再利用する
 - [ ] 1.7 復調品質の定量評価とゲート化(characterize → `baseline.json` → 回帰ゲート → 絶対しきい値)
 - [ ] 1.8 因果・ストリーミング参照モデル化(判別器を I/Q 差分形へ / フィルタを状態付き逐次形へ)
