@@ -17,6 +17,15 @@ PILOT_FREQ = 19_000  # 19 kHz
 SUB_FREQ = 38_000  # 38 kHz (19k * 2)
 
 
+# --- 音声再生フィルタ (Audio Reconstruction / 192k→48k 間引き FIR) ---
+# 復調後の音声を帯域制限しつつ 48kHz へ間引く FIR の設計仕様(roadmap 1.7 H1)。
+# 阻止端を PILOT_FREQ(19k)未満に置き、パイロット漏れ込みを 60dB 以上削る。
+# 高次 IIR を避け FIR(線形位相・固定小数点に強い・ポリフェーズ間引きで HW 化)を採る。
+AUDIO_BAND_HZ = 15_000  # 通過端 [Hz]: 音声上限
+AUDIO_LPF_STOP_HZ = 18_000  # 阻止端 [Hz]: PILOT_FREQ 未満に置く
+AUDIO_LPF_STOP_ATTEN_DB = 60.0  # 阻止量 [dB]
+
+
 # --- RF帯域 (Radio Frequency) ---
 RF_FS = 2_304_000  # 2.3MHz = MPX(192k) * 12
 
@@ -34,6 +43,15 @@ MAX_DEVIATION = 75_000
 # 時定数
 # 日本のFM放送規格に準拠 (50 \mu s)
 TIME_CONSTANT = 50e-6
+
+
+# --- 受信フロントエンド (Channel Select / イメージ除去) ---
+# 複素ミキシング後・判別器前に置くチャネル選択 LPF。実信号を複素 LO で混ぜると
+# 2*CARRIER_FREQ(=500kHz)に像が出るので、これを除去してから位相を取る。
+# 側波帯(Carson ≈ 2*(MAX_DEVIATION + 53k) ≈ 256kHz、片側 ≈ 128kHz)は残し、
+# 500kHz の像は落とす位置に置く。HW では DDC のチャネル選択フィルタに相当。
+IF_LPF_CUTOFF_HZ = 250_000  # チャネル選択 LPF カットオフ [Hz]
+IF_LPF_ORDER = 6  # Butterworth 次数(2.3M で回るので低次が HW 安価)
 
 
 # --- 制御ループ定数 (PLL Settings) ---

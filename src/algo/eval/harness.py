@@ -36,6 +36,18 @@ class PipelineResult:
     mpx_fs: float  # pll_error のサンプリング周波数 [Hz]
 
 
+def _steady_state(
+    x: np.ndarray, n_coherent: int, fir_taps: int, decim: int
+) -> np.ndarray:
+    """upfirdn 出力から定常区間 n_coherent サンプルを切り出す(mono / L / R 共通)。
+
+    線形位相 FIR の群遅延 (fir_taps-1)/2(入力レート)を出力レートに換算した分だけ
+    先頭の立ち上がり過渡を捨て、そこからコヒーレント長を取る。
+    """
+    group_delay = (fir_taps - 1) // 2 // decim
+    return x[group_delay : group_delay + n_coherent]
+
+
 def run_pipeline(audio: np.ndarray, snr_db: float, seed: int) -> PipelineResult:
     """audio を TX→AWGN(seed固定)→RX に通し、L/R と PLL 誤差を返す。
 
@@ -75,10 +87,15 @@ def run_pipeline(audio: np.ndarray, snr_db: float, seed: int) -> PipelineResult:
 
     lr = rx._stereo_decode(mpx_signal, carrier_38k)
 
+    # 測定窓の切り出し(受信機は素のストリーミング出力を返すので、定常区間の抽出は
+    # 測定側の責務)。mono / L / R とも FIR の立ち上がり過渡を群遅延ぶん捨て、入力と同じ
+    # 長さ=コヒーレント長(評価トーンが整数周期に乗る長さ)の定常区間だけをメトリクスに渡す。
+    n = len(audio)
+    taps, dec = len(rx.audio_fir), rx.audio_dec
     return PipelineResult(
-        mono=mono,
-        left=lr[:, 0],
-        right=lr[:, 1],
+        mono=_steady_state(mono, n, taps, dec),
+        left=_steady_state(lr[:, 0], n, taps, dec),
+        right=_steady_state(lr[:, 1], n, taps, dec),
         pll_error=pll_error,
         audio_fs=rx.audio_fs,
         mpx_fs=rx.mpx_fs,
