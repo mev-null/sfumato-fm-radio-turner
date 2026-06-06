@@ -10,14 +10,25 @@
 
 ## 概要
 
-FM ステレオ放送を受信するデジタルラジオ受信機を作る。送信〜通信路〜受信を丸ごとソフトウェアでモデル化して正しい変復調方式を確立し、その方式をそのまま FPGA(Tang Nano 9K / Gowin GW1NR-9C)へ実装する。
+FM ステレオ放送を受信するデジタルラジオ受信機を作る。送信〜通信路〜受信を丸ごとソフトウェアでモデル化して正しい変復調方式を確立し、その方式をFPGA(Tang Nano 9K / Gowin GW1NR-9C)へ実装する。
 
+### トラック構成
 開発は 2 つのトラックで進める。
 
-- **algo** … 正しい方式を見つける(Python/NumPy/SciPy)。
-- **hdl** … 確立した方式をハードに落とす(SystemVerilog)。
+| トラック | 場所 | 役割 |
+|---|---|---|
+| algo | `src/algo/`(Python) | FM ステレオの変調・通信路・復調を NumPy/SciPy でモデル化 |
+| hdl  | `src/hdl/`(SystemVerilog) | algo で確立した方式を Tang Nano 9K 向け RTL に実装 |
 
-原則として、**algo で検証していない方式は hdl に実装しない**。
+### 主要処理パイプライン(送信 → 通信路 → 受信):
+
+```
+音声(48k) → MPX(192k) → RF(2.304M) → FM変調 → IQ
+   → [AWGN] →
+IQ → 直交復調 → MPX(192k) → PLLで38k再生 → マトリクス分離 → 音声(48k)
+```
+
+信号設計(レート・帯域)と物理定数の正本は `src/algo/settings.py`、現状の整理は [docs/architecture.md](docs/architecture.md)。
 
 ## デモ・成果
 
@@ -45,23 +56,6 @@ https://github.com/user-attachments/assets/f829db6a-4b2d-4762-8efc-568c4f685ed2
 <img width="1400" height="1000" alt="first_ancem92_analysis" src="https://github.com/user-attachments/assets/a0f4a1f1-e2b0-4021-9e59-ff494015a0eb" />
 
 変復調アルゴリズムの詳しい解説は [docs/algorithm.md](docs/algorithm.md) を参照。
-
-## 構成(2 トラック)
-
-| トラック | 場所 | 役割 |
-|---|---|---|
-| algo | `src/algo/`(Python) | FM ステレオの変調・通信路・復調を NumPy/SciPy でモデル化 |
-| hdl  | `src/hdl/`(SystemVerilog) | algo で確立した方式を Tang Nano 9K 向け RTL に実装 |
-
-主要処理パイプライン(送信 → 通信路 → 受信):
-
-```
-音声(48k) → MPX(192k) → RF(2.304M) → FM変調 → IQ
-   → [AWGN] →
-IQ → 直交復調 → MPX(192k) → PLLで38k再生 → マトリクス分離 → 音声(48k)
-```
-
-信号設計(レート・帯域)と物理定数の正本は `src/algo/settings.py`、現状の整理は [docs/architecture.md](docs/architecture.md)。
 
 ## リポジトリ構成
 
