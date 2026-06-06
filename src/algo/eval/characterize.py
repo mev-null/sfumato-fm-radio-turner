@@ -26,7 +26,8 @@ from algo.eval.harness import one_channel_driven, run_pipeline, single_tone
 BASELINE_PATH = Path(__file__).parent / "baseline.json"
 
 # schema のバージョン。条件・項目の構造を変えたら上げる。
-SCHEMA_VERSION = 1
+# v2: THD/SINAD の測定元をステレオ復調 L からモノラル復調(main=L+R)へ切替。
+SCHEMA_VERSION = 2
 
 
 def current_conditions() -> dict:
@@ -42,7 +43,8 @@ def current_conditions() -> dict:
 def build_report() -> dict:
     """各シナリオを回しメトリクス値を集計する。baseline schema と同形を返す。
 
-    THD/SINAD は単一トーン、セパレーションは L 駆動・R 無音で測る。
+    THD/SINAD は単一トーンのモノラル復調(main=L+R)、セパレーションは
+    L 駆動・R 無音のステレオ復調で測る。
     PLL ロック時間は tol/hold が未設定(None)の間は計測せず None を記録する。
     """
     f0 = settings.EVAL_TONE_FREQ
@@ -65,8 +67,8 @@ def build_report() -> dict:
         "schema_version": SCHEMA_VERSION,
         "conditions": current_conditions(),
         "metrics": {
-            "thd": metrics.thd(r_tone.left, r_tone.audio_fs, f0),
-            "sinad_db": metrics.sinad_db(r_tone.left, r_tone.audio_fs, f0),
+            "thd": metrics.thd(r_tone.mono, r_tone.audio_fs, f0),
+            "sinad_db": metrics.sinad_db(r_tone.mono, r_tone.audio_fs, f0),
             "separation_db": metrics.channel_separation_db(r_sep.left, r_sep.right),
             "pll_lock_time_s": pll_lock,
         },

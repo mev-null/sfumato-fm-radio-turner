@@ -35,7 +35,8 @@ def report():
 _SONY_TARGET = "Sony 製品スペック目標。到達したら xfail を外しハードゲートへ昇格する"
 
 
-@pytest.mark.xfail(reason=_SONY_TARGET, strict=True)
+# THD はモノラル復調経路で Sony 絶対しきい値(0.3%)に到達したためハードゲートへ昇格。
+# (roadmap 1.7 ラチェット運用。SINAD・セパレーションは未達のため strict xfail のまま追跡)
 def test_thd_below_absolute_ceiling(report):
     if settings.THD_MAX is None:
         pytest.skip("settings.THD_MAX 未設定(利用者が観測値から確定する)")

@@ -32,7 +32,10 @@ Python/NumPy による FM ステレオ変復調モデル。成果の詳細は [R
   - [x] 回帰ゲート(ハード)・絶対しきい値ゲート(`tests/test_quality_gate.py`、`make eval` に同梱)
   - [x] 方針を ADR-005 で確定([adr/adr-005-demod-quality-gate.md](adr/adr-005-demod-quality-gate.md))
   - [x] 絶対しきい値の目標を市販製品スペック(Sony ST-5130)に設定 — THD ≤0.3% / セパレーション ≥42dB / S/N ≥75dB
-  - [ ] **ギャップを詰める**(現状 THD 1.45% / SINAD 32dB / セパレーション 1.67dB)。特にセパレーションは目標から約 40dB 不足 → 1.5.3・`_stereo_decode` の作り込み対象
+  - [ ] **ギャップを詰める**(現状 THD 0.097% / SINAD 40.9dB / セパレーション 1.67dB)。
+        ステレオ分離の前にモノラル復調経路で THD/SINAD を測る方針へ切替(`_mono_decode`、baseline schema v2)。
+        THD はモノラルで Sony 絶対ゲート(≤0.3%)に到達しハードゲートへ昇格済み。残るギャップは SINAD(目標 75dB)と
+        セパレーション(目標 42dB・約 40dB 不足 → 1.5.3・`_stereo_decode` の作り込み対象)。
   - [ ] PLL ロック tol/hold の確定(観測ログから `settings.py` を埋める)
 
   > 運用(ラチェット): 回帰ゲートが床を守り、Sony 絶対ゲートは strict xfail で目標を追跡する。

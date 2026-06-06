@@ -62,6 +62,24 @@ class FmReceiver:
         down_factor = int(self.rf_fs // self.mpx_fs)
         return signal.decimate(signal_data, down_factor, ftype="fir")
 
+    def _main_lpf(self, x: np.ndarray) -> np.ndarray:
+        """15kHz LPF（main=L+R の抽出と sub 復調後の不要成分カットに共用）"""
+        nyquist = self.mpx_fs / 2
+        b, a = signal.butter(N=5, Wn=15000 / nyquist, btype="low")
+        return signal.lfilter(b, a, x)
+
+    def _mono_decode(self, mpx_signal: np.ndarray) -> np.ndarray:
+        """MPX から main(L+R)だけを取り出すモノラル復調経路。
+
+        ステレオ・マトリクス(サブキャリア検波)を通さず、FM 復調チェーン単体の
+        THD/SINAD を測るために使う。15kHz LPF → 192k→48k デシメーション →
+        de-emphasis の順で、返り値はモノラル (N,)。
+        """
+        main_signal = self._main_lpf(mpx_signal)
+        q = int(self.mpx_fs // self.audio_fs)  # 4
+        mono = signal.decimate(main_signal, q, ftype="fir")
+        return self.emphasis.de_emphasis(mono)
+
     def _recover_carrier(self, mpx_signal: np.ndarray) -> np.ndarray:
         """
         MPX信号から19kHzパイロットを抽出し、38kHz搬送波を再生する
@@ -82,9 +100,7 @@ class FmReceiver:
 
         # --- 1. Main (L+R) の抽出 ---
         # 15kHz LPF
-        cutoff_main = 15000
-        b_main, a_main = signal.butter(N=5, Wn=cutoff_main / nyquist, btype="low")
-        main_signal = signal.lfilter(b_main, a_main, mpx_signal)
+        main_signal = self._main_lpf(mpx_signal)
 
         # --- 2. Sub (L-R) の抽出と復調 ---
         # A: 23k〜53k BPF
@@ -99,7 +115,7 @@ class FmReceiver:
         demodulated_raw = sub_modulated * carrier_38k * 2.0
 
         # C: 不要成分カット (再度15kHz LPFを使用)
-        sub_signal = signal.lfilter(b_main, a_main, demodulated_raw)
+        sub_signal = self._main_lpf(demodulated_raw)
 
         # --- 3. マトリックス回路 (分離) ---
         left_ch = main_signal + sub_signal

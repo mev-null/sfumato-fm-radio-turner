@@ -28,8 +28,9 @@ from algo.utils.audio_source import AudioSource
 class PipelineResult:
     """パイプライン 1 回分の出力。メトリクス関数への入力をまとめる。"""
 
-    left: np.ndarray  # 復調 L チャンネル [audio_fs]
-    right: np.ndarray  # 復調 R チャンネル [audio_fs]
+    mono: np.ndarray  # モノラル復調 main=L+R [audio_fs]（THD/SINAD 用）
+    left: np.ndarray  # ステレオ復調 L チャンネル [audio_fs]
+    right: np.ndarray  # ステレオ復調 R チャンネル [audio_fs]
     pll_error: np.ndarray  # PLL 位相比較器の誤差系列 [mpx_fs]
     audio_fs: float  # L/R のサンプリング周波数 [Hz]
     mpx_fs: float  # pll_error のサンプリング周波数 [Hz]
@@ -60,6 +61,10 @@ def run_pipeline(audio: np.ndarray, snr_db: float, seed: int) -> PipelineResult:
 
     mpx_signal = rx.process(noisy_rf)
 
+    # モノラル復調(main=L+R のみ)。THD/SINAD はステレオ・マトリクスを通さない
+    # この経路で測り、FM 復調チェーン単体の品質を見る。
+    mono = rx._mono_decode(mpx_signal)
+
     # 搬送波再生と誤差ログの回収(誤差は _recover_carrier では捨てられている)
     carrier_38k, pll_error = rx.pll.process(mpx_signal)
 
@@ -71,6 +76,7 @@ def run_pipeline(audio: np.ndarray, snr_db: float, seed: int) -> PipelineResult:
     lr = rx._stereo_decode(mpx_signal, carrier_38k)
 
     return PipelineResult(
+        mono=mono,
         left=lr[:, 0],
         right=lr[:, 1],
         pll_error=pll_error,
