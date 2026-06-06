@@ -14,14 +14,22 @@ FM ステレオ放送を受信するデジタルラジオ受信機を作る。�
 
 開発は 2 つのトラックで進める。
 
-- **algo** … 先に正しい方式を見つける場(Python/NumPy/SciPy)。
-- **hdl** … 確立した方式をハードに落とす場(SystemVerilog)。
+- **algo** … 正しい方式を見つける(Python/NumPy/SciPy)。
+- **hdl** … 確立した方式をハードに落とす(SystemVerilog)。
 
 原則として、**algo で検証していない方式は hdl に実装しない**。
 
 ## デモ・成果
 
-algo では、FM ステレオの変調・通信路(AWGN)・復調を通したモデルが完成し、音楽信号をそれなりの音質で復調できる。pre/de-emphasis と PLL による搬送波再生まで実装済み。hdl は RTL 実装に着手した段階(進捗は [docs/roadmap.md](docs/roadmap.md))。
+algo では、FM ステレオの変調・通信路(AWGN)・復調を通したモデルが完成し、実ステレオ音楽を**製品スペック水準**で復調できる。品質は規律ではなく**仕組み**で守る方針で、決定論パイプライン + 回帰/絶対しきい値ゲート(`make eval`)で定量評価している(方針は [ADR-005](docs/adr/adr-005-demod-quality-gate.md))。市販チューナ(Sony ST-5130)スペックを目標に置き、現状は:
+
+| メトリクス | 現状 | 目標(Sony) | 状態 |
+|---|---|---|---|
+| THD(全高調波歪み) | 0.0072% | ≤ 0.3% | ✅ ハードゲート達成 |
+| セパレーション(L-R 分離) | 45.0 dB | ≥ 42 dB | ✅ ハードゲート達成 |
+| SINAD(信号対雑音+歪み) | 66.8 dB | ≥ 75 dB | ⏳ 追跡中(あと 8.2dB) |
+
+評価条件は 1kHz・SNR 40dB・乱数シード固定。実ステレオ音楽でも Side(L−R)成分の入出力相関 **0.986** を確認(ステレオ情報を忠実に復元)。主要技術は pre/de-emphasis、PLL による 38kHz 搬送波再生、線形位相 FIR によるパイロット除去・チャネル選択(イメージ除去)・ステレオ復調の遅延/位相整合([ADR-006](docs/adr/adr-006-receiver-filter-fir-iir.md) / [ADR-007](docs/adr/adr-007-stereo-separation.md))。hdl は RTL 実装に着手した段階(進捗は [docs/roadmap.md](docs/roadmap.md))。
 
 ### モデル全体のシミュレーション動画
 
@@ -58,10 +66,12 @@ IQ → 直交復調 → MPX(192k) → PLLで38k再生 → マトリクス分離 
 ## リポジトリ構成
 
 ```
-src/algo/   algo: Python DSP モデル(transmitter / channnel / receiver, dsp/, settings.py)
+src/algo/   algo: Python DSP モデル(transmitter / channnel / receiver, dsp/, eval/, settings.py)
 src/hdl/       hdl: SystemVerilog(rtl/ tb/ constraints/)— 規約は src/hdl/README.md
 docs/          roadmap / architecture / adr / algorithm
 tests/         algo の品質評価(metrics gate)
+inputs/        入力音源(wav。gitignore=ローカル資産)
+outputs/       make run の生成物(復調音声・解析グラフ。gitignore)
 Makefile       algo・hdl のタスクをラップ
 ```
 
@@ -78,7 +88,7 @@ make fmt       # ruff format + ruff check --fix
 make lint      # ruff check
 ```
 
-実行すると `outputs/<name>_restored.wav`(復調音声)と `outputs/<name>_analysis.png`(L/R の時間波形・PSD)が生成される。一連のフローは `/sim-algo` スラッシュコマンドでも実行できる。
+入力音源は `inputs/`(既定 `inputs/first_ancem92.wav`、`settings.INPUT_FILE` で指定)に置く。`make run` で `outputs/<name>_restored.wav`(復調音声)と `outputs/<name>_analysis.png`(L/R の時間波形・残差・PSD)が生成される。どちらも CWD 非依存でプロジェクトルート基準に解決する。一連のフローは `/sim-algo` スラッシュコマンドでも実行できる。
 
 ### hdl (FPGA, Tang Nano 9K)
 

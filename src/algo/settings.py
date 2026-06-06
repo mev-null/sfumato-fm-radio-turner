@@ -95,8 +95,8 @@ RF_NYQUIST = RF_FS / 2
 # デフォルトのSN比 (シミュレーション用)
 DEFAULT_SNR_DB = 40.0
 
-# シミュレーション入力音源
-INPUT_FILE = "first_ancem92.wav"
+# シミュレーション入力音源(プロジェクトルート基準の相対パス。main.py で root に解決)
+INPUT_FILE = "inputs/first_ancem92.wav"
 
 
 # --- 品質評価・ゲート (roadmap 1.7) ---
