@@ -76,3 +76,10 @@ baseline 更新タイミング: **改善を確認したときだけ手動で `ma
 ## 備考
 - 実装: `src/algo/eval/harness.py`(ドライバ)/ `characterize.py`(集計・baseline I/O)/ `tests/test_quality_gate.py`(ゲート)/ `settings.py`(条件・しきい値)/ `Makefile`(`characterize` ターゲット)。
 - メトリクス定義の正本は [adr 無し]・`src/algo/eval/metrics.py` と契約テスト `tests/test_metrics.py`。
+
+### 追記(2026-06-07): THD/SINAD の測定基準をモノラル経路へ
+当初 THD/SINAD はステレオ復調後の L チャンネルで測っていたが、サブキャリア検波の残差が
+混入していた。**モノラル復調経路(`_mono_decode`、main=L+R)で測る方式に変更**し、FM 復調
+チェーン単体の純度を評価する(Sony の SINAD は元々モノ規格)。`baseline.json` は schema v2。
+これにより THD・セパレーションが Sony 絶対ゲートに到達し、strict xfail → ハードゲートへ昇格した。
+詳細・根拠は [adr-006-receiver-filter-fir-iir.md](adr-006-receiver-filter-fir-iir.md) / [adr-007-stereo-separation.md](adr-007-stereo-separation.md)。

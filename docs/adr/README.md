@@ -17,6 +17,9 @@ algo(信号処理方式)・hdl(回路実装方式)のどちらの決定もここ
 | [002](adr-002-audio-output-sigma-delta-dac.md) | [hdl] 音声出力 = 自作 ΣΔ DAC(MVP)、I2S 外部 DAC は任意上位 | Proposed | 2026-06-04 |
 | [003](adr-003-brain-implementation-approach.md) | [hdl] コンテキスト認識(Brain)の実装方式 | Proposed | 2026-06-04 |
 | [004](adr-004-sfumato-core-substrate-spresense.md) | [hdl] Sfumato 核の実装基板 = 外部 DSP(Spresense)候補 / 物理 ANC ではなく環境調和 | Proposed | 2026-06-04 |
+| [005](adr-005-demod-quality-gate.md) | [algo] 復調品質ゲート(characterize / baseline / 回帰 / 絶対しきい値) | Accepted | 2026-06-05 |
+| [006](adr-006-receiver-filter-fir-iir.md) | [algo] 復調純度(THD/SINAD)の改善 — モノ測定・パイロット除去・イメージ除去とフィルタ方式 | Accepted | 2026-06-07 |
+| [007](adr-007-stereo-separation.md) | [algo] ステレオ・セパレーションの確立 — 遅延整合 + 搬送波位相補正 + PLL 帯域 | Accepted | 2026-06-07 |
 
 ## 新しい ADR の書き方
 
