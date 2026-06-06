@@ -141,8 +141,12 @@ def main():
         in_l_d, out_l_d = aligned(in_l, out_l)
         plt.subplot(2, 2, 1)
         plt.plot(t_axis, in_l_d, label="In (L)", color="blue", alpha=0.5)
-        plt.plot(t_axis, out_l_d, label="Out (L)", color="cyan", alpha=0.8, linestyle="--")
-        plt.plot(t_axis, in_l_d - out_l_d, label="In−Out", color="gray", alpha=0.6, lw=0.8)
+        plt.plot(
+            t_axis, out_l_d, label="Out (L)", color="cyan", alpha=0.8, linestyle="--"
+        )
+        plt.plot(
+            t_axis, in_l_d - out_l_d, label="In−Out", color="gray", alpha=0.6, lw=0.8
+        )
         plt.title(f"Left Channel (Time Domain, delay {delay_ms:.2f}ms aligned)")
         plt.xlabel("Time [ms]")
         plt.ylabel("Amplitude")  # AC 信号なので 0 を中心に正負に振れる
@@ -153,8 +157,12 @@ def main():
         in_r_d, out_r_d = aligned(in_r, out_r)
         plt.subplot(2, 2, 2)
         plt.plot(t_axis, in_r_d, label="In (R)", color="red", alpha=0.5)
-        plt.plot(t_axis, out_r_d, label="Out (R)", color="orange", alpha=0.8, linestyle="--")
-        plt.plot(t_axis, in_r_d - out_r_d, label="In−Out", color="gray", alpha=0.6, lw=0.8)
+        plt.plot(
+            t_axis, out_r_d, label="Out (R)", color="orange", alpha=0.8, linestyle="--"
+        )
+        plt.plot(
+            t_axis, in_r_d - out_r_d, label="In−Out", color="gray", alpha=0.6, lw=0.8
+        )
         plt.title("Right Channel (Time Domain, delay aligned)")
         plt.xlabel("Time [ms]")
         plt.ylabel("Amplitude")
