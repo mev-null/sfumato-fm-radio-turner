@@ -1,0 +1,15 @@
+{
+  "schema_version": 2,
+  "conditions": {
+    "tone_hz": 1000.0,
+    "duration_s": 1.0,
+    "snr_db": 40.0,
+    "seed": 12345
+  },
+  "metrics": {
+    "thd": 7.244897451125054e-05,
+    "sinad_db": 66.75624077761319,
+    "separation_db": 45.04287387802174,
+    "pll_lock_time_s": null
+  }
+}

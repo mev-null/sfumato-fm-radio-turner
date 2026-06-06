@@ -20,13 +20,38 @@ Python/NumPy による FM ステレオ変復調モデル。成果の詳細は [R
 - [x] 1.4 ステレオ MPX(MPX 生成 / 分離、DSB-SC によるサブキャリア検波)
 - [x] 1.5.1 pre-emphasis / de-emphasis(高域のノイズ耐性向上)
 - [x] 1.5.2 PLL(デジタル 2 次 Type-II)によるパイロット同期・搬送波再生
-- [ ] 1.5.3 PLL を含む受信系の最適化(README 1.5.2.2 続き)
+- [x] 1.5.3 PLL を含む受信系の最適化(README 1.5.2.2 続き)
+  - ステレオ復調を線形位相 FIR 化(`stereo_main_lpf`/`stereo_sub_bpf`、同長=群遅延一致)し
+    main を群遅延ぶん遅らせて sub と整合。IIR の非線形位相が壊していた「副搬送波=2×パイロット」関係を回復。
+  - 38kHz 搬送波に位相補正(PLL の NCO 出力に定数オフセット、`STEREO_CARRIER_PHASE_RAD`)。
+  - PLL 帯域を 50→200Hz に最適化(高 SNR では追従残差 ε が律速で広帯域が有利。低 SNR でも悪化しないことを SNR スイープで確認)。
+  - 結果: セパレーション 0.84→**45.04dB**(Sony 42dB 超過 → ハードゲート昇格)。
 - [x] 1.6 評価基盤の整備(品質を規律ではなく**仕組み**で守る。CI で lint と並ぶゲートにする)
   - [x] `add_awgn` の乱数シード固定(再現性。`radio/channel.py` は `rng` 注入式で固定可能)
   - [x] `pytest` 導入・`tests/` 雛形・`make eval` ターゲット・GitHub Actions(CI: fmt-check + lint + eval)
   - [x] メトリクス層 `algo/eval/metrics.py`(THD/SINAD・L-R セパレーション・PLL ロック時間)— 契約テスト 5 ケース green
         ※ HDL シミュ出力も同じ関数に通し、algo↔hdl のアクセプタンス・オラクルとして再利用する
 - [ ] 1.7 復調品質の定量評価とゲート化(characterize → `baseline.json` → 回帰ゲート → 絶対しきい値)
+  - [x] characterize ハーネス(決定論パイプライン `eval/harness.py` / 集計 `eval/characterize.py`)
+  - [x] `baseline.json` 機構(`make characterize` で生成、`schema_version`/`conditions` 付き)
+  - [x] 回帰ゲート(ハード)・絶対しきい値ゲート(`tests/test_quality_gate.py`、`make eval` に同梱)
+  - [x] 方針を ADR-005 で確定([adr/adr-005-demod-quality-gate.md](adr/adr-005-demod-quality-gate.md))
+  - [x] 絶対しきい値の目標を市販製品スペック(Sony ST-5130)に設定 — THD ≤0.3% / セパレーション ≥42dB / S/N ≥75dB
+  - [ ] **ギャップを詰める**(現状 THD 0.007% / SINAD 66.8dB / セパレーション 0.84dB)。
+        ステレオ分離の前にモノラル復調経路で THD/SINAD を測る方針へ切替(`_mono_decode`、baseline schema v2)。
+        THD はモノラルで Sony 絶対ゲート(≤0.3%)に到達しハードゲートへ昇格済み。
+        SINAD は2段で改善: (1) 19kHz パイロット漏れを 15kHz 間引き FIR(`dsp/filters.py`、ポリフェーズ)で除去 40.9→49.8dB、
+        (2) 複素ミキサ後のチャネル選択 LPF(`_channel_select`、2*fc 像除去)で 49.8→66.8dB。
+        ※ (2) は受信共通段のため、未達のセパレーションが 1.67→0.84dB に微変動(共に分離ゼロ域、baseline 追従)。
+        ステレオ L/R の最終間引きも mono と同じ 15kHz ポリフェーズ FIR に統一(パイロット除去を反映)。
+        セパレーションは 1.5.3 で 0.84→45.04dB に改善し Sony 絶対ゲート(≥42dB)へ昇格(下記 1.5.3)。
+        **残るギャップは SINAD のみ(目標 75dB・現状 66.8dB・あと 8.2dB)**。THD・セパレーションは昇格済み。
+  - [ ] PLL ロック tol/hold の確定(観測ログから `settings.py` を埋める)
+
+  > 運用(ラチェット): 回帰ゲートが床を守り、Sony 絶対ゲートは strict xfail で目標を追跡する。
+  > アルゴが各メトリクスで Sony 仕様に到達すると xpass(strict→fail)で「ハードゲートへ昇格」を通知。
+  > **1.7 合格 = Sony 絶対ゲートが全て昇格しきった状態**(= 方式確立 = Phase 2/HDL 合格基準)。
+  > 改善したら `make characterize` で baseline の床を上げ直す。
 - [ ] 1.8 因果・ストリーミング参照モデル化(判別器を I/Q 差分形へ / フィルタを状態付き逐次形へ)
 - [ ] デシメーション多段化の整理(現状: 係数 12 単段 FIR、`radio/receiver.py`)
 - [ ] 最大周波数偏移 75kHz での品質検証(settings は復帰済み・定量未確認、README 1.2 c.f. 参照)
