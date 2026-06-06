@@ -26,6 +26,21 @@ AUDIO_LPF_STOP_HZ = 18_000  # 阻止端 [Hz]: PILOT_FREQ 未満に置く
 AUDIO_LPF_STOP_ATTEN_DB = 60.0  # 阻止量 [dB]
 
 
+# --- ステレオ復調(線形位相 FIR・遅延整合)roadmap 1.5.3 ---
+# 副搬送波(L-R を載せた DSB-SC)の帯域と、main/sub を遅延整合させるための線形位相 FIR。
+# IIR の非線形位相が「副搬送波=2×パイロット」関係と main/sub の打ち消しを壊すため、
+# ここだけ位相重視で FIR にする(音質系の IIR は据え置き=適材適所)。
+SUB_BAND_LOW_HZ = 23_000  # 副搬送波帯の下端 [Hz]
+SUB_BAND_HIGH_HZ = 53_000  # 上端 [Hz]
+STEREO_FIR_TAPS = (
+    255  # main LPF / sub BPF の FIR タップ数(奇数=線形位相、同長で群遅延一致)
+)
+# 38kHz 再生搬送波の位相補正 [rad]。経路の群遅延ぶん副搬送波が位相回転するのを補う。
+# 値は実測で確定(240deg。フィルタ群遅延で決まり PLL 帯域には依存しない)。
+# フィルタ構成(STEREO_FIR_TAPS 等)を変えたら取り直す。±10deg で約 6dB 落ちる。
+STEREO_CARRIER_PHASE_RAD = 4.1888
+
+
 # --- RF帯域 (Radio Frequency) ---
 RF_FS = 2_304_000  # 2.3MHz = MPX(192k) * 12
 
@@ -58,7 +73,10 @@ IF_LPF_ORDER = 6  # Butterworth 次数(2.3M で回るので低次が HW 安価)
 
 # PLL (Phase Locked Loop) 用の設定
 # ノイズ除去と追従性のバランスを決める
-PLL_BANDWIDTH = 50.0  # ループ帯域幅 (Hz): 狭いほどノイズに強い
+# ループ帯域幅 (Hz): 狭いほどノイズに強いが、追従が鈍り NCO の定常位相誤差 ε が残る。
+# ステレオ検波では ε が 38kHz で 2ε に拡大し分離を律速するため、高 SNR では広めが有利
+# (実測: 50Hz→38dB / 120Hz→42dB / 200Hz→45dB)。低 SNR でのノイズ耐性とのトレードオフ。
+PLL_BANDWIDTH = 200.0
 PLL_DAMPING = 1.2  # ダンピング係数 (zeta): 0.707が最も応答が良い
 
 

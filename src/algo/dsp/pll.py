@@ -9,15 +9,19 @@ class PilotPLL:
         fs: float = settings.MPX_FS,
         center_freq: float = settings.PILOT_FREQ,
         bandwidth: float = settings.PLL_BANDWIDTH,
+        out_phase_offset: float = 0.0,
     ):
         """
         Args:
             fs: サンプリング周波数 (192000)
             center_freq: ロックする目標周波数 (19000)
             bandwidth: ループ帯域幅 (Hz)。ここが「反応速度」を決める。
+            out_phase_offset: 38kHz 出力搬送波に足す位相 [rad]。ループ自体は変えず、
+                NCO 出力だけ位相回転する(ステレオ検波の位相整合に使う)。
         """
         self.fs = fs
         self.center_freq = center_freq
+        self.out_phase_offset = out_phase_offset
 
         # --- 制御係数の計算 ---
         # アナログPLLの理論式からデジタル係数を導出
@@ -79,8 +83,9 @@ class PilotPLL:
                 current_phase += 2 * np.pi
 
             # E. 出力生成 (38kHz)
-            # 19kHzの位相(current_phase)を使って、2倍の周波数(38kHz)の sin を作る
-            carrier_38k[i] = np.sin(2 * current_phase)
+            # 19kHzの位相(current_phase)を2倍して 38kHz の sin を作る。
+            # 位相補正 out_phase_offset を足してステレオ検波の位相を整合させる。
+            carrier_38k[i] = np.sin(2 * current_phase + self.out_phase_offset)
 
             # ログ記録
             error_log[i] = error

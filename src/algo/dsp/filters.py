@@ -23,3 +23,21 @@ def design_audio_decimation_fir() -> np.ndarray:
     # (Δf=4kHz, fs=192kHz, A=60dB → ≈175)を等リプル設計に流用。
     numtaps = 175
     return signal.remez(numtaps, bands, desired, weight=weights, fs=settings.MPX_FS)
+
+
+def design_stereo_fir() -> tuple[np.ndarray, np.ndarray]:
+    """ステレオ復調用の線形位相 FIR(main LPF と sub BPF)を返す (roadmap 1.5.3)。
+
+    両者を同じ長さ STEREO_FIR_TAPS(奇数)にして群遅延 (N-1)/2 を一致させ、
+    main/sub の遅延整合を可能にする。線形位相なので「副搬送波=2×パイロット」の
+    位相関係が保たれ、ステレオ・セパレーションが成立する。
+    """
+    n = settings.STEREO_FIR_TAPS
+    main_lpf = signal.firwin(n, settings.AUDIO_BAND_HZ, fs=settings.MPX_FS)
+    sub_bpf = signal.firwin(
+        n,
+        [settings.SUB_BAND_LOW_HZ, settings.SUB_BAND_HIGH_HZ],
+        pass_zero=False,
+        fs=settings.MPX_FS,
+    )
+    return main_lpf, sub_bpf

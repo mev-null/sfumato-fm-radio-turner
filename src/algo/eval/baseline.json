@@ -9,7 +9,7 @@
   "metrics": {
     "thd": 7.244897451125054e-05,
     "sinad_db": 66.75624077761319,
-    "separation_db": 0.8410955878203762,
+    "separation_db": 45.04287387802174,
     "pll_lock_time_s": null
   }
 }

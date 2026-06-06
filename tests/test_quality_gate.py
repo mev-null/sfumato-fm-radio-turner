@@ -50,7 +50,8 @@ def test_sinad_above_absolute_floor(report):
     assert report["metrics"]["sinad_db"] >= settings.SINAD_MIN_DB
 
 
-@pytest.mark.xfail(reason=_SONY_TARGET, strict=True)
+# セパレーションはステレオ復調の線形位相 FIR 化・遅延整合・搬送波位相整合・PLL 帯域最適化で
+# Sony 絶対しきい値(42dB)に到達したためハードゲートへ昇格(roadmap 1.5.3 / 1.7 ラチェット)。
 def test_separation_above_absolute_floor(report):
     if settings.SEPARATION_MIN_DB is None:
         pytest.skip("settings.SEPARATION_MIN_DB 未設定(利用者が観測値から確定する)")

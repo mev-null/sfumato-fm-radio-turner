@@ -19,7 +19,8 @@ class FmReceiver:
         self.rf_fs = rf_fs
         self.mpx_fs = mpx_fs
         self.audio_fs = audio_fs
-        self.pll = PilotPLL()
+        # 38kHz 搬送波は位相補正を入れて再生(ステレオ検波の位相整合)。
+        self.pll = PilotPLL(out_phase_offset=settings.STEREO_CARRIER_PHASE_RAD)
 
         # decimatoin ratio
         self.dec_factor = int(self.rf_fs / self.mpx_fs)
@@ -31,6 +32,10 @@ class FmReceiver:
         # 音声再生用 15kHz 間引き FIR(192k→48k)。係数は固定(HW では係数 ROM 相当)。
         self.audio_dec = int(self.mpx_fs // self.audio_fs)  # 4
         self.audio_fir = filters.design_audio_decimation_fir()
+
+        # ステレオ復調用の線形位相 FIR(main LPF / sub BPF、同長=群遅延一致)。
+        self.stereo_main_lpf, self.stereo_sub_bpf = filters.design_stereo_fir()
+        self.stereo_group_delay = (len(self.stereo_main_lpf) - 1) // 2  # D
 
     def process(self, rf_signal: np.ndarray) -> np.ndarray:
         """
@@ -85,12 +90,6 @@ class FmReceiver:
         down_factor = int(self.rf_fs // self.mpx_fs)
         return signal.decimate(signal_data, down_factor, ftype="fir")
 
-    def _main_lpf(self, x: np.ndarray) -> np.ndarray:
-        """15kHz LPF（main=L+R の抽出と sub 復調後の不要成分カットに共用）"""
-        nyquist = self.mpx_fs / 2
-        b, a = signal.butter(N=5, Wn=15000 / nyquist, btype="low")
-        return signal.lfilter(b, a, x)
-
     def _mono_decode(self, mpx_signal: np.ndarray) -> np.ndarray:
         """MPX から main(L+R)だけを取り出すモノラル復調経路。
 
@@ -117,28 +116,23 @@ class FmReceiver:
 
     def _stereo_decode(self, mpx_signal: np.ndarray, carrier_38k: np.ndarray):
         """
-        MPX信号と再生キャリア(38k)を使って、L/Rを分離する
+        MPX信号と再生キャリア(38k)を使って、L/Rを分離する。
+
+        位相が命なので帯域分割は線形位相 FIR(`stereo_main_lpf` / `stereo_sub_bpf`、同長)。
+        main は LPF 1 段(群遅延 D)、sub は BPF→検波→LPF の 2 段(2D)なので、
+        main を D 遅らせて両者の群遅延を 2D に揃える(これで L=main+sub / R=main-sub の
+        打ち消しが成立)。搬送波は PLL 側で位相補正済み。
         """
-        nyquist = self.mpx_fs / 2
+        d = self.stereo_group_delay
 
-        # --- 1. Main (L+R) の抽出 ---
-        # 15kHz LPF
-        main_signal = self._main_lpf(mpx_signal)
+        # --- 1. Main (L+R): 線形位相 LPF → sub と総遅延を揃えるため D 遅延 ---
+        main = signal.lfilter(self.stereo_main_lpf, 1.0, mpx_signal)
+        main_signal = np.concatenate([np.zeros(d), main])[: len(main)]
 
-        # --- 2. Sub (L-R) の抽出と復調 ---
-        # A: 23k〜53k BPF
-        low_edge = 23000
-        high_edge = 53000
-        b_sub, a_sub = signal.butter(
-            N=5, Wn=[low_edge / nyquist, high_edge / nyquist], btype="band"
-        )
-        sub_modulated = signal.lfilter(b_sub, a_sub, mpx_signal)
-
-        # B: 復調 (検波) ※振幅補償 2.0倍
+        # --- 2. Sub (L-R): 23k〜53k BPF → 検波(振幅補償 2.0)→ 15kHz LPF (合計 2D) ---
+        sub_modulated = signal.lfilter(self.stereo_sub_bpf, 1.0, mpx_signal)
         demodulated_raw = sub_modulated * carrier_38k * 2.0
-
-        # C: 不要成分カット (再度15kHz LPFを使用)
-        sub_signal = self._main_lpf(demodulated_raw)
+        sub_signal = signal.lfilter(self.stereo_main_lpf, 1.0, demodulated_raw)
 
         # --- 3. マトリックス回路 (分離) ---
         left_ch = main_signal + sub_signal

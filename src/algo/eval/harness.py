@@ -88,14 +88,20 @@ def run_pipeline(audio: np.ndarray, snr_db: float, seed: int) -> PipelineResult:
     lr = rx._stereo_decode(mpx_signal, carrier_38k)
 
     # 測定窓の切り出し(受信機は素のストリーミング出力を返すので、定常区間の抽出は
-    # 測定側の責務)。mono / L / R とも FIR の立ち上がり過渡を群遅延ぶん捨て、入力と同じ
-    # 長さ=コヒーレント長(評価トーンが整数周期に乗る長さ)の定常区間だけをメトリクスに渡す。
-    n = len(audio)
-    taps, dec = len(rx.audio_fir), rx.audio_dec
+    # 測定側の責務)。
+    # mono: THD/SINAD は FFT ビンに乗る前提なので、立ち上がり過渡を audio FIR の群遅延ぶん
+    #   捨て、入力と同じコヒーレント長(整数周期)を取る。
+    mono_ss = _steady_state(
+        mono, n_coherent=len(audio), fir_taps=len(rx.audio_fir), decim=rx.audio_dec
+    )
+    # L/R: セパレーションは電力比でコヒーレンス不要。ステレオ FIR ぶん群遅延が伸びるので、
+    #   両端の過渡を群遅延+余裕ぶん広めに捨て、残りの定常区間で測る。
+    warm192 = 2 * rx.stereo_group_delay + (len(rx.audio_fir) - 1) // 2
+    warm = warm192 // rx.audio_dec + 50
     return PipelineResult(
-        mono=_steady_state(mono, n, taps, dec),
-        left=_steady_state(lr[:, 0], n, taps, dec),
-        right=_steady_state(lr[:, 1], n, taps, dec),
+        mono=mono_ss,
+        left=lr[warm:-warm, 0],
+        right=lr[warm:-warm, 1],
         pll_error=pll_error,
         audio_fs=rx.audio_fs,
         mpx_fs=rx.mpx_fs,
