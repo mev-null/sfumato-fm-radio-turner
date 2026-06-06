@@ -30,11 +30,11 @@ https://github.com/user-attachments/assets/f829db6a-4b2d-4762-8efc-568c4f685ed2
 ### 復調音声(ステレオ音楽)
 
 - 変調前: [first_ancem92.wav](https://github.com/user-attachments/files/25324970/first_ancem92.wav)
-- 復調後: [first_ancem92_restored.wav](https://github.com/user-attachments/files/25324963/first_ancem92_restored.wav)
+- 復調後: [first_ancem92.wav](https://github.com/user-attachments/files/28670715/first_ancem92.wav)
 
 ### 復調結果の解析(pre/de-emphasis 適用後)
 
-<img width="1400" height="1000" alt="ancem92_emphasised_10db_analysis" src="https://github.com/user-attachments/assets/9137d37b-cdd3-4cf1-9c2f-9e06f2ef189a" />
+<img width="1400" height="1000" alt="first_ancem92_analysis" src="https://github.com/user-attachments/assets/a0f4a1f1-e2b0-4021-9e59-ff494015a0eb" />
 
 変復調アルゴリズムの詳しい解説は [docs/algorithm.md](docs/algorithm.md) を参照。
 
