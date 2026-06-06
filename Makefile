@@ -16,7 +16,7 @@ clean-env:
 .PHONY: run
 run:
 	@echo "Running simulation..."
-	$(UV) run src/algo/main.py
+	PYTHONPATH=src $(UV) run python -m algo.main
 
 .PHONY: fmt
 fmt:

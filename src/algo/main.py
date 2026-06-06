@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import time
+from pathlib import Path
 import matplotlib.pyplot as plt
 
 from algo import settings
@@ -18,9 +19,11 @@ def main():
     RadioUI.header()
 
     # --- 設定 ---
-    INPUT_FILE = settings.INPUT_FILE
+    # パス解決(CWD 非依存): 入力 inputs/・出力 outputs/ をプロジェクトルート基準に。
+    root_dir = Path(__file__).resolve().parents[2]  # プロジェクトルート
+    INPUT_FILE = str(root_dir / settings.INPUT_FILE)
     base_name = os.path.splitext(os.path.basename(INPUT_FILE))[0]
-    OUTPUT_FILE = f"outputs/{base_name}_restored.wav"
+    OUTPUT_FILE = str(root_dir / "outputs" / f"{base_name}_restored.wav")
     TARGET_SNR = settings.DEFAULT_SNR_DB
 
     # テスト音源生成
@@ -107,43 +110,54 @@ def main():
         in_l, in_r = split_channels(audio_data)
         out_l, out_r = split_channels(demodulated_audio)
 
-        # プロット開始
+        # 時間波形は受信フィルタの群遅延ぶん遅れ、振幅スケールも異なる。
+        # 相互相関で遅延を推定して整列し、振幅を合わせ、定常区間を重ねる(表示のみ)。
+        def estimate_lag(in_ch, out_ch):
+            m = min(len(in_ch), len(out_ch))
+            seg = slice(m // 4, m // 4 + min(40000, m // 2))
+            x = in_ch[seg] - np.mean(in_ch[seg])
+            y = out_ch[seg] - np.mean(out_ch[seg])
+            xc = np.correlate(y, x, mode="full")
+            return int(np.argmax(np.abs(xc)) - (len(x) - 1))
+
+        limit = 1000  # 拡大表示するサンプル数
+        lag = estimate_lag(in_l, out_l)  # 群遅延 [サンプル]
+        start = min(len(in_l) // 4, max(0, len(in_l) - limit - abs(lag)))
+
+        def aligned(in_ch, out_ch):
+            """定常区間を遅延整列・振幅整合して (入力, 出力) を返す(表示用)。"""
+            i = in_ch[start : start + limit]
+            o = out_ch[start + lag : start + lag + limit]
+            ri, ro = np.sqrt(np.mean(i**2)), np.sqrt(np.mean(o**2))
+            if ro > 0:
+                o = o * (ri / ro)
+            return i, o
+
         plt.figure(figsize=(14, 10))
-        limit = 1000  # 拡大表示するサンプル数 (先頭1000サンプル)
-
-        # 時間軸 (ms)
         t_axis = np.arange(limit) / settings.AUDIO_FS * 1000
+        delay_ms = lag / settings.AUDIO_FS * 1000
 
-        # --- [左上] Left Ch 時間波形 ---
+        # --- [左上] Left Ch 時間波形(遅延整列・振幅整合)+ 残差 ---
+        in_l_d, out_l_d = aligned(in_l, out_l)
         plt.subplot(2, 2, 1)
-        plt.plot(t_axis, in_l[:limit], label="In (L)", color="blue", alpha=0.5)
-        plt.plot(
-            t_axis,
-            out_l[:limit],
-            label="Out (L)",
-            color="cyan",
-            alpha=0.8,
-            linestyle="--",
-        )
-        plt.title("Left Channel (Time Domain)")
+        plt.plot(t_axis, in_l_d, label="In (L)", color="blue", alpha=0.5)
+        plt.plot(t_axis, out_l_d, label="Out (L)", color="cyan", alpha=0.8, linestyle="--")
+        plt.plot(t_axis, in_l_d - out_l_d, label="In−Out", color="gray", alpha=0.6, lw=0.8)
+        plt.title(f"Left Channel (Time Domain, delay {delay_ms:.2f}ms aligned)")
         plt.xlabel("Time [ms]")
-        plt.ylabel("Amplitude")
+        plt.ylabel("Amplitude")  # AC 信号なので 0 を中心に正負に振れる
         plt.legend(loc="upper right")
         plt.grid(True, alpha=0.3)
 
-        # --- [右上] Right Ch 時間波形 ---
+        # --- [右上] Right Ch 時間波形(遅延整列・振幅整合)+ 残差 ---
+        in_r_d, out_r_d = aligned(in_r, out_r)
         plt.subplot(2, 2, 2)
-        plt.plot(t_axis, in_r[:limit], label="In (R)", color="red", alpha=0.5)
-        plt.plot(
-            t_axis,
-            out_r[:limit],
-            label="Out (R)",
-            color="orange",
-            alpha=0.8,
-            linestyle="--",
-        )
-        plt.title("Right Channel (Time Domain)")
+        plt.plot(t_axis, in_r_d, label="In (R)", color="red", alpha=0.5)
+        plt.plot(t_axis, out_r_d, label="Out (R)", color="orange", alpha=0.8, linestyle="--")
+        plt.plot(t_axis, in_r_d - out_r_d, label="In−Out", color="gray", alpha=0.6, lw=0.8)
+        plt.title("Right Channel (Time Domain, delay aligned)")
         plt.xlabel("Time [ms]")
+        plt.ylabel("Amplitude")
         plt.legend(loc="upper right")
         plt.grid(True, alpha=0.3)
 
@@ -180,7 +194,7 @@ def main():
         plt.tight_layout()
 
         # 保存と表示
-        image_filename = f"outputs/{base_name}_analysis.png"
+        image_filename = str(root_dir / "outputs" / f"{base_name}_analysis.png")
         plt.savefig(image_filename)
         RadioUI.log("IO", f"Graph saved to {image_filename}", RadioUI.GREEN)
         plt.show()
