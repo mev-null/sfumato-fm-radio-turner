@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)
 
-FM ステレオ放送の送信〜通信路〜受信を丸ごとソフトウェアでモデル化して方式を確立し(**algo** / Python)、その方式を Tang Nano 9K(Gowin GW1NR-9C)へ実装する(**hdl** / SystemVerilog)。原則 **algo で検証していない方式は hdl に実装しない**。
+FM ステレオ放送の送信〜通信路〜受信を丸ごとソフトウェアでモデル化して方式を確立し(**algo** / Python)、その方式を Tang Nano 9K(Gowin GW1NR-9C)へ実装する(**hdl** / SystemVerilog)。
 
 ## デモ
 
@@ -98,6 +98,7 @@ outputs/    make run の生成物(復調音声・解析グラフ。gitignore)
 
 ## クレジット・ライセンス
 
-- **"first_ancem92.wav"** — 作曲・制作: mev-null。ステレオ FM 復調の忠実度を検証するために作曲したオリジナル曲。
+- **"first_ancem92.wav"** — ステレオ FM 復調の忠実度を検証するために作曲したオリジナル曲。
+  - 作曲・制作: mev-null © 2026
+  - ライセンス: [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)(共有自由・クレジット必須・商用/二次創作は不可)
 - **コード**: [MIT License](LICENSE)
-- **音楽**: [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)(共有自由・クレジット必須・商用/二次創作は不可)
