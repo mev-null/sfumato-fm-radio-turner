@@ -5,8 +5,11 @@
 <img width="2811" height="853" alt="sfumato-radio-v1-0" src="https://github.com/user-attachments/assets/dd557f31-7457-422a-b91d-ca37e6aa2c50" />
 
 [![CI](https://github.com/mev-null/sfumato-fm-radio-turner/actions/workflows/ci.yml/badge.svg)](https://github.com/mev-null/sfumato-fm-radio-turner/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)
+[![SystemVerilog](https://img.shields.io/badge/SystemVerilog-orange.svg)](src/hdl/README.md)
+[![FPGA: Tang Nano 9K](https://img.shields.io/badge/FPGA-Tang%20Nano%209K-blueviolet.svg)](src/hdl/README.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)
+[![Music: CC BY-NC-ND 4.0](https://img.shields.io/badge/music-CC%20BY--NC--ND%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 
 FM ステレオ放送の送信〜通信路〜受信を丸ごとソフトウェアでモデル化して方式を確立し(**algo** / Python)、その方式を Tang Nano 9K(Gowin GW1NR-9C)へ実装する(**hdl** / SystemVerilog)。
 
