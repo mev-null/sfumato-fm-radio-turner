@@ -37,15 +37,20 @@ class PipelineResult:
 
 
 def _steady_state(
-    x: np.ndarray, n_coherent: int, fir_taps: int, decim: int
+    x: np.ndarray, n_coherent: int, fir_taps: int, decim: int, period: int
 ) -> np.ndarray:
-    """upfirdn 出力から定常区間 n_coherent サンプルを切り出す(mono / L / R 共通)。
+    """復調出力から定常区間を整数周期で切り出す(mono / L / R 共通)。
 
     線形位相 FIR の群遅延 (fir_taps-1)/2(入力レート)を出力レートに換算した分だけ
-    先頭の立ち上がり過渡を捨て、そこからコヒーレント長を取る。
+    先頭の立ち上がり過渡を捨てる。残りが n_coherent に満たない場合は、利用可能長を
+    評価トーンの整数周期(period の倍数)へ床合わせして取る。窓が整数周期である限り
+    FFT のビンが基本波・高調波に乗り続ける(コヒーレンス維持)。因果フィルタ化
+    (roadmap 1.8)で出力の尻尾サンプルが無くなっても測定が崩れないための措置。
     """
     group_delay = (fir_taps - 1) // 2 // decim
-    return x[group_delay : group_delay + n_coherent]
+    avail = len(x) - group_delay
+    n = min(n_coherent, (avail // period) * period)
+    return x[group_delay : group_delay + n]
 
 
 def run_pipeline(audio: np.ndarray, snr_db: float, seed: int) -> PipelineResult:
@@ -92,7 +97,11 @@ def run_pipeline(audio: np.ndarray, snr_db: float, seed: int) -> PipelineResult:
     # mono: THD/SINAD は FFT ビンに乗る前提なので、立ち上がり過渡を audio FIR の群遅延ぶん
     #   捨て、入力と同じコヒーレント長(整数周期)を取る。
     mono_ss = _steady_state(
-        mono, n_coherent=len(audio), fir_taps=len(rx.audio_fir), decim=rx.audio_dec
+        mono,
+        n_coherent=len(audio),
+        fir_taps=len(rx.audio_fir),
+        decim=rx.audio_dec,
+        period=int(round(rx.audio_fs / settings.EVAL_TONE_FREQ)),
     )
     # L/R: セパレーションは電力比でコヒーレンス不要。ステレオ FIR ぶん群遅延が伸びるので、
     #   両端の過渡を群遅延+余裕ぶん広めに捨て、残りの定常区間で測る。
