@@ -1,5 +1,5 @@
 [project]
-name = "sfumato-fm-radio-turner"
+name = "sfumato-fm-radio-tuner"
 version = "0.1.0"
 description = "FPGA FM radio receiver — Python DSP modeling (algo) and SystemVerilog implementation for Tang Nano 9K (hdl)"
 readme = "README.md"

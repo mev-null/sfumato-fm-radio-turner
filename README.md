@@ -1,10 +1,10 @@
-# sfumato-fm-radio-turner
+# sfumato-fm-radio-tuner
 
 > FPGA で動かす FM ステレオラジオ受信機。Python/NumPy で変復調方式を確立し(**algo**)、Tang Nano 9K 向け SystemVerilog に落とし込む(**hdl**)2 トラック構成のプロジェクト。
 
 <img width="2811" height="853" alt="sfumato-radio-v1-0" src="https://github.com/user-attachments/assets/dd557f31-7457-422a-b91d-ca37e6aa2c50" />
 
-[![CI](https://github.com/mev-null/sfumato-fm-radio-turner/actions/workflows/ci.yml/badge.svg)](https://github.com/mev-null/sfumato-fm-radio-turner/actions/workflows/ci.yml)
+[![CI](https://github.com/mev-null/sfumato-fm-radio-tuner/actions/workflows/ci.yml/badge.svg)](https://github.com/mev-null/sfumato-fm-radio-tuner/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)
 [![SystemVerilog](https://img.shields.io/badge/SystemVerilog-orange.svg)](src/hdl/README.md)
 [![FPGA: Tang Nano 9K](https://img.shields.io/badge/FPGA-Tang%20Nano%209K-blueviolet.svg)](src/hdl/README.md)
