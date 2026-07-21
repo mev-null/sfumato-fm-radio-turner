@@ -613,7 +613,7 @@ wheels = [
 ]
 
 [[package]]
-name = "sfumato-fm-radio-turner"
+name = "sfumato-fm-radio-tuner"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

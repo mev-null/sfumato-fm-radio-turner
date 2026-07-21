@@ -1,4 +1,4 @@
-# CLAUDE.md — sfumato-fm-radio-turner
+# CLAUDE.md — sfumato-fm-radio-tuner
 
 FPGA で動かす FM ラジオ受信機。**algo**(Python/NumPy による FM 変復調アルゴリズムのモデリング・シミュレーション)で方式を確立し、確立した方式を **hdl**(SystemVerilog / Tang Nano 9K)へ落とし込む 2 トラック構成のプロジェクト。本ファイルは開発時の作業ガイド(環境・コマンド・規約)を扱う。
 

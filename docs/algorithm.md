@@ -61,7 +61,7 @@ FM 信号を受け取り、
 しかし、最大周波数偏移 (Maximum Frequency Deviation) について、日本の FM 放送規格に準拠 (+/- 75kHz) して実装していたため、可視化時に期待される結果を得られなかった。
 フィルタのカットオフ周波数(帯域制限)を 100kHz ほどに修正したかったが、ベースバンド IQ 信号は 48kHz を期待しているため、最大周波数偏移を 7.5kHz に落として実装した。
 実際の FM ラジオでは、2 段階で Decimation を行なっていることを知ったため、今後の実装課題になる。
-[fix: 最大周波数遷移を下げた](https://github.com/mev-null/sfumato-fm-radio-turner/pull/3/changes/afdc3e510589ab221ce63b8b71e9d62133b2f44d)
+[fix: 最大周波数遷移を下げた](https://github.com/mev-null/sfumato-fm-radio-tuner/pull/3/changes/afdc3e510589ab221ce63b8b71e9d62133b2f44d)
 
 ## 1.3 Demodulation
 
