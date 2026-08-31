@@ -1,9 +1,10 @@
 # ADR-002: [hdl] 音声出力経路は自作 ΣΔ DAC(MVP)、I2S 外部 DAC は任意上位
 
-- ステータス: Proposed
+- ステータス: Deferred (2026-08-31)(保留前は Proposed)
+- 保留理由: 2026-08-31 にプロジェクトを「Python/NumPy の DSP モデルが成果物」と再定義し、FPGA 移植を将来の拡張としたため。決定内容は再開時の出発点として保持する(経緯は [../README.md](../README.md))。
 - 日付: 2026-06-04
 - 領域: hdl
-- 関連: [../roadmap.md](../roadmap.md) / [../architecture.md](../architecture.md) / [../diagrams/system-architecture.mmd](../diagrams/system-architecture.mmd)
+- 関連: [../roadmap-hardware.md](../roadmap-hardware.md) / [../architecture-hardware.md](../architecture-hardware.md) / [../diagrams/system-architecture.mmd](../diagrams/system-architecture.mmd)
 
 ## コンテキスト
 
@@ -48,7 +49,7 @@ DSP 自作の目的・ブレッドボード完結性を優先し、**案1** に�
 
 ### 将来への含み
 - 載せ替えを行う場合は、本 ADR を Superseded にせず、任意上位の採用として追記更新する。
-- RC フィルタ定数の実測値が決まったら [../architecture.md](../architecture.md) に反映する。
+- RC フィルタ定数の実測値が決まったら [../architecture-hardware.md](../architecture-hardware.md) に反映する。
 
 ## 備考
-- 調達候補(ジャック・抵抗・コンデンサ / 任意の PCM5102A)は [../roadmap.md](../roadmap.md) の「ハードウェア調達」を参照。
+- 調達候補(ジャック・抵抗・コンデンサ / 任意の PCM5102A)は [../roadmap-hardware.md](../roadmap-hardware.md) の「ハードウェア調達」を参照。
