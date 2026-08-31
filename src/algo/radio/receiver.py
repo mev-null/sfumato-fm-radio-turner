@@ -29,7 +29,7 @@ class FmReceiver:
             fs=self.audio_fs, time_constant=settings.TIME_CONSTANT
         )
 
-        # 音声再生用 15kHz 間引き FIR(192k→48k)。係数は固定(HW では係数 ROM 相当)。
+        # 音声再生用 15kHz 間引き FIR(192k→48k)。係数は固定(将来 HW に移植する場合は係数 ROM 相当)。
         self.audio_dec = int(self.mpx_fs // self.audio_fs)  # 4
         self.audio_fir = filters.design_audio_decimation_fir()
 
@@ -68,7 +68,7 @@ class FmReceiver:
         実信号を複素 LO で混ぜると 2*fc(=500kHz)に像が出る。位相 (np.angle) を
         取る前にこれを除去する Butterworth LPF(settings.IF_LPF_CUTOFF_HZ /
         IF_LPF_ORDER)。側波帯(Carson ≈ 256kHz)は残し像だけ落とす。
-        HW では DDC のチャネル選択フィルタに相当。
+        将来 HW に移植する場合は DDC のチャネル選択フィルタに相当。
         """
         b, a = signal.butter(
             settings.IF_LPF_ORDER,
@@ -95,7 +95,7 @@ class FmReceiver:
 
         ステレオ・マトリクス(サブキャリア検波)を通さず、FM 復調チェーン単体の
         THD/SINAD を測るために使う。15kHz 間引き FIR(192k→48k のポリフェーズ間引き、
-        upfirdn = 出力点だけ計算する HW 忠実な構造)で帯域制限と間引きを同時に行い、
+        upfirdn = 出力点だけ計算する、将来 HW に移植しやすい構造)で帯域制限と間引きを同時に行い、
         19kHz パイロット漏れを断ってから de-emphasis する。返り値はモノラル (N,)。
         立ち上がり過渡を含む素のストリーミング出力で、定常区間の切り出しは測定側で行う。
         """
