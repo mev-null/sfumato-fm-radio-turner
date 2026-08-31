@@ -30,7 +30,7 @@ ENV/
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 
-# --- FPGA / Gowin EDA (Tang Nano) ---
+# --- FPGA / Gowin EDA (Tang Nano; 保留中の src/hdl。生成物 src/hdl/build/ は上の build/ で除外) ---
 # 合成・配置配線の中間ファイル
 impl/
 temp/
