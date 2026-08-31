@@ -100,7 +100,7 @@ make fmt           # ruff format + ruff check --fix
 make lint          # ruff check
 ```
 
-`make run` reads `inputs/first_ancem92.wav` (`settings.INPUT_FILE`) and writes the demodulated audio to `outputs/<name>_restored.wav` together with an analysis figure, `outputs/<name>_analysis.png` (time-domain overlay with residual, and PSD, per channel). If the input file is missing, a synthetic stereo time-signal tone is generated and used instead. `inputs/` and `outputs/` are git-ignored.
+`make run` reads `inputs/first_ancem92.wav` (`settings.INPUT_FILE`) and writes the demodulated audio to `outputs/<name>_restored.wav` together with an analysis figure, `outputs/<name>_analysis.png` (time-domain overlay with residual, and PSD, per channel). If the input file is missing, a synthetic stereo test tone (time-signal pips) is generated and used instead. `inputs/` and `outputs/` are git-ignored.
 
 ## Repository layout
 
