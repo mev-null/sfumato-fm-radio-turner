@@ -3,7 +3,7 @@
 - ステータス: Accepted
 - 日付: 2026-06-07
 - 領域: algo
-- 関連: [../roadmap.md](../roadmap.md)(1.7 / デシメーション多段化)/ [adr-005-demod-quality-gate.md](adr-005-demod-quality-gate.md) / [adr-007-stereo-separation.md](adr-007-stereo-separation.md) / [adr-001-rf-frontend-low-if-adc.md](adr-001-rf-frontend-low-if-adc.md)
+- 関連: [../roadmap.md](../roadmap.md)(1.7 / デシメーション多段化)/ [adr-005-demod-quality-gate.md](adr-005-demod-quality-gate.md) / [adr-007-stereo-separation.md](adr-007-stereo-separation.md) / [adr-001(保留)](../future/adr/adr-001-rf-frontend-low-if-adc.md)
 
 ## コンテキスト
 
@@ -13,7 +13,7 @@
 2. **19kHz パイロット漏れ**: 音声帯域制限が Butterworth 5次(IIR)で、なだらかな遮断のため 19kHz パイロットを約 11dB しか落とせず、雑音電力の **86%** を占めていた。
 3. **複素ミキサのイメージ折返し**: 実信号を複素 LO で混ぜると 2·fc(=500kHz)に像が出るが、`np.angle` の前に除去していなかったため位相が汚れ、SINAD を ~50dB に張り付かせていた(SNR 非依存=決定論的な床)。
 
-これらの根は**フィルタの選び方・位相特性**にある。受信チェーンのフィルタ方式と、純度(THD/SINAD)の作り込み方を定める必要がある。フィルタ方式の候補は 全 IIR / 全 FIR / 使い分け(位相律速段だけ FIR)で、algo→hdl(Tang Nano 9K)を見据え、位相忠実性が要る段に限って FIR を使う方針に収束した。
+これらの根は**フィルタの選び方・位相特性**にある。受信チェーンのフィルタ方式と、純度(THD/SINAD)の作り込み方を定める必要がある。フィルタ方式の候補は 全 IIR / 全 FIR / 使い分け(位相律速段だけ FIR)で、将来のハードウェア移植を妨げないことも考慮し、位相忠実性が要る段に限って FIR を使う方針に収束した。
 
 ## 決定
 
@@ -26,11 +26,11 @@
 
 **スコープ外(今回やらない)**: SINAD の残り 8.2dB(66.8→75dB)。バイパス実験でアーキの素の床(~67dB)に到達済みで、ここから先は TX 側イメージ(192k→2.3M アップサンプル)や測定床に踏み込む逓減領域。高レート段(2.3M)の FIR 化も別途(CIC/多段へ再設計)。
 
-### HW(FPGA)根拠 — なぜ位相律速段だけ FIR か
+### 将来の移植を見据えた理由 — なぜ位相律速段だけ FIR か
 
 - FPGA で希少なのは**乗算器(DSP ブロック)**。音声・MPX の低レート処理はクロック(数十 MHz)に対し桁違いに遅く、**乗算器1個を時分割**して長い FIR を回せる → 低レートでは FIR の多タップは実質安価で、線形位相・常時安定・固定小数点耐性の利点だけが残る。
 - 高レート(RF 2.3M)はサイクル余裕が小さく鋭い FIR が高コスト → 低次 IIR か、定石の CIC(乗算器ゼロの間引き)/多段が有利。チャネル選択を低次 IIR にしたのはこのため。
-- 高次 IIR は極が単位円付近で固定小数点に弱い(リミットサイクル・不安定化)。位相律速段を FIR にすることは固定小数点化(roadmap 2.3)とも整合する。
+- 高次 IIR は極が単位円付近で固定小数点に弱い(リミットサイクル・不安定化)。位相律速段を FIR にすることは将来の固定小数点化([../future/roadmap-hardware.md](../future/roadmap-hardware.md) 2.3)とも整合する。
 
 ## 影響
 

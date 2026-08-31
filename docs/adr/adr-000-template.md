@@ -2,7 +2,7 @@
 
 - ステータス: Proposed
 - 日付: YYYY-MM-DD
-- 領域: algo / hdl(どちらの決定か)
+- 領域: algo(ハードウェア移植に関する決定は保留中。再開時は docs/future/adr/ の規約に従う)
 - 関連: [../roadmap.md](../roadmap.md) / [../architecture.md](../architecture.md)
 
 ## コンテキスト

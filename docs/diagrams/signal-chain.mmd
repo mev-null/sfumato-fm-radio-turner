@@ -1,0 +1,31 @@
+%% sfumato-fm-radio-tuner — signal chain of the Python/NumPy model (src/algo/).
+%% Rates and constants are taken from src/algo/settings.py:
+%%   AUDIO_FS 48 kHz, MPX_FS 192 kHz (x4), RF_FS 2.304 MHz (x12),
+%%   CARRIER_FREQ 250 kHz, MAX_DEVIATION 75 kHz, TIME_CONSTANT 50 us,
+%%   PILOT_FREQ 19 kHz, SUB_FREQ 38 kHz, PLL_BANDWIDTH 200 Hz.
+flowchart TB
+    subgraph TX["Transmitter — src/algo/radio/transmitter.py"]
+        direction LR
+        A["Audio L/R<br/>48 kHz"] --> PE["Pre-emphasis<br/>τ = 50 µs"]
+        PE --> UP1["↑4"]
+        UP1 --> MPX["Stereo MPX @ 192 kHz<br/>(L+R) + 19 kHz pilot + (L−R)·38 kHz DSB-SC"]
+        MPX --> UP2["↑12"]
+        UP2 --> FM["FM modulator @ 2.304 MHz<br/>fc = 250 kHz, Δf = ±75 kHz"]
+    end
+
+    AWGN["AWGN channel — src/algo/radio/channel.py<br/>SNR 40 dB by default, seedable rng"]
+
+    subgraph RX["Receiver — src/algo/radio/receiver.py"]
+        direction LR
+        MIX["Complex mix<br/>fc → 0 Hz (IQ)"] --> CS["Channel-select LPF<br/>Butterworth N=6, 250 kHz"]
+        CS --> DEMOD["Quadrature demod<br/>angle → unwrap → diff"]
+        DEMOD --> DEC["↓12 (FIR)<br/>MPX @ 192 kHz"]
+        DEC --> PLL["Pilot PLL 19 kHz<br/>2nd-order type-II, BW 200 Hz<br/>→ 38 kHz carrier + phase offset"]
+        DEC --> MAT["Stereo matrix<br/>linear-phase FIR (255 taps), delay-matched<br/>L = main+sub, R = main−sub"]
+        PLL --> MAT
+        MAT --> DEC2["Polyphase FIR ↓4<br/>15 kHz pass / 18 kHz stop"]
+        DEC2 --> DE["De-emphasis<br/>τ = 50 µs"]
+        DE --> OUT["Audio L/R<br/>48 kHz"]
+    end
+
+    TX --> AWGN --> RX

@@ -1,7 +1,7 @@
 // blink_tb.sv — blink のテストベンチ(学習用スケルトン)
 //
-// `make sim`(Verilator --binary --timing --trace)で実行され、
-// build/fpga/blink.vcd を出力する。波形は `make wave`(surfer)で確認。
+// `make -C src/hdl sim`(Verilator --binary --timing --trace)で実行され、
+// build/blink.vcd(src/hdl/build/)を出力する。波形は `make -C src/hdl wave`(surfer)で確認。
 //
 // --timing モードで動かすので #遅延 / always によるクロック生成が使える(Verilator)。
 
@@ -32,7 +32,7 @@ module blink_tb;
 
   // ---- 波形ダンプ ----
   initial begin
-    $dumpfile("build/fpga/blink.vcd");
+    $dumpfile("build/blink.vcd");
     $dumpvars(0, blink_tb);
   end
 

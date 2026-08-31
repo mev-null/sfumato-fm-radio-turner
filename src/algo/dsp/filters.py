@@ -12,7 +12,7 @@ def design_audio_decimation_fir() -> np.ndarray:
     仕様は settings: 通過端 AUDIO_BAND_HZ(15k)/ 阻止端 AUDIO_LPF_STOP_HZ(18k)/
     阻止量 AUDIO_LPF_STOP_ATTEN_DB(60dB)。等リプル設計(remez / Parks-McClellan)で
     阻止帯を 10 倍重みづけし、19kHz パイロットを沈める。
-    係数は固定(HW では係数 ROM 相当)なので設計はここに閉じ、適用(ポリフェーズ間引き
+    係数は固定(将来 HW に移植する場合は係数 ROM 相当)なので設計はここに閉じ、適用(ポリフェーズ間引き
     upfirdn(h, x, up=1, down=4))は受信機側で行う。
     """
     bands = [0, settings.AUDIO_BAND_HZ, settings.AUDIO_LPF_STOP_HZ, settings.MPX_FS / 2]

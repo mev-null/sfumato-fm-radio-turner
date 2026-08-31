@@ -1,9 +1,10 @@
 # ADR-003: [hdl] コンテキスト認識(Brain)の実装方式
 
-- ステータス: Proposed(未決 / 検討中)
+- ステータス: Deferred (2026-08-31)(保留前は Proposed・未決)
+- 保留理由: 2026-08-31 にプロジェクトを「Python/NumPy の DSP モデルが成果物」と再定義し、FPGA 移植を将来の拡張としたため。決定内容は再開時の出発点として保持する(経緯は [../README.md](../README.md))。
 - 日付: 2026-06-04
 - 領域: hdl
-- 関連: [../roadmap.md](../roadmap.md) / [../architecture.md](../architecture.md) / [../diagrams/system-architecture.mmd](../diagrams/system-architecture.mmd)
+- 関連: [../roadmap-hardware.md](../roadmap-hardware.md) / [../architecture-hardware.md](../architecture-hardware.md) / [../diagrams/system-architecture.mmd](../diagrams/system-architecture.mmd)
 
 ## コンテキスト
 
@@ -35,7 +36,7 @@
 
 - **MVP では Brain を作らない。** Muscle 経路(FM 受信 → 復調 → 出力)を優先する。
 - 先に **Muscle 側の制御 I/F(Register Bus / パラメータ書き換え方式)を Phase 3 で定義**し、Brain はそのレジスタを操作する主体として後から差し替え可能にする(疎結合)。
-- Brain 着手(Phase 4)時に、本 ADR を更新して案1〜4 から確定する。FPGA に閉じるならリソース制約上**専用 RTL もしくは軽量ソフトコア**が有力。大規模 NN は範囲外候補(スコープは [../roadmap.md](../roadmap.md) Phase 4 を参照)。外部 DSP(案4 / Spresense)に出す場合は適応オーディオの実装基板と一体で [adr-004](adr-004-sfumato-core-substrate-spresense.md) として検討する。
+- Brain 着手(Phase 4)時に、本 ADR を更新して案1〜4 から確定する。FPGA に閉じるならリソース制約上**専用 RTL もしくは軽量ソフトコア**が有力。大規模 NN は範囲外候補(スコープは [../roadmap-hardware.md](../roadmap-hardware.md) Phase 4 を参照)。外部 DSP(案4 / Spresense)に出す場合は適応オーディオの実装基板と一体で [adr-004](adr-004-sfumato-core-substrate-spresense.md) として検討する。
 
 ## 影響
 
@@ -46,7 +47,7 @@
 - Brain の実現性(特に推論規模)が未確定のまま。Phase 4 で再評価が要る。
 
 ### 将来への含み
-- Phase 4 着手時に本 ADR を Accepted へ更新。方式確定後、algo↔hdl 対応表([../architecture.md](../architecture.md))に追記する。
+- Phase 4 着手時に本 ADR を Accepted へ更新。方式確定後、algo↔hdl 対応表([../architecture-hardware.md](../architecture-hardware.md))に追記する。
 
 ## 備考
-- "Edge AI" の中身(NN か軽量分類器/ヒューリスティクスか)のスコープは [../roadmap.md](../roadmap.md) Phase 4 を参照(軽量側から。大規模 NN は範囲外候補)。
+- "Edge AI" の中身(NN か軽量分類器/ヒューリスティクスか)のスコープは [../roadmap-hardware.md](../roadmap-hardware.md) Phase 4 を参照(軽量側から。大規模 NN は範囲外候補)。

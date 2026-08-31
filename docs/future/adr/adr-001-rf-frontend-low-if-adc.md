@@ -1,9 +1,10 @@
 # ADR-001: [hdl] FM RF フロントエンドは低IF + 高速ADC方式(方式A)
 
-- ステータス: Accepted
+- ステータス: Deferred (2026-08-31)(保留前は Accepted)
+- 保留理由: 2026-08-31 にプロジェクトを「Python/NumPy の DSP モデルが成果物」と再定義し、FPGA 移植を将来の拡張としたため。決定内容は再開時の出発点として保持する(経緯は [../README.md](../README.md))。
 - 日付: 2026-06-03
 - 領域: hdl
-- 関連: [../roadmap.md](../roadmap.md) / [../architecture.md](../architecture.md)
+- 関連: [../roadmap-hardware.md](../roadmap-hardware.md) / [../architecture-hardware.md](../architecture-hardware.md)
 
 ## コンテキスト
 
@@ -44,9 +45,9 @@ algo との整合・検証容易性と、ワイド FM の帯域確保を優先�
 - 高速 ADC の並列 I/F 配線、IF フィルタ・ミキサのアナログ設計、基板化が必要。ブレッドボードでは完結しない。
 
 ### 将来への含み
-- LO・IF・実サンプリングレートの本番値は実装で確定し、決まり次第 [../architecture.md](../architecture.md) に反映する。
+- LO・IF・実サンプリングレートの本番値は実装で確定し、決まり次第 [../architecture-hardware.md](../architecture-hardware.md) に反映する。
 - 感度・選択度・帯域が不足する場合は、別 ADR を追加して再検討する(本 ADR を Superseded にする)。
 
 ## 備考
 - ADC のビット幅(12bit)が roadmap 2.3 の固定小数点モデルの入力語長を決める前提となる。
-- 調達タイミング・候補は [../roadmap.md](../roadmap.md) の「ハードウェア調達」を参照。
+- 調達タイミング・候補は [../roadmap-hardware.md](../roadmap-hardware.md) の「ハードウェア調達」を参照。

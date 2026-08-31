@@ -1,13 +1,13 @@
-# ADR-005: 復調品質ゲートの方針(characterize / baseline / 回帰 / 絶対しきい値)
+# ADR-005: [algo] 復調品質ゲートの方針(characterize / baseline / 回帰 / 絶対しきい値)
 
 - ステータス: Accepted
 - 日付: 2026-06-05
 - 領域: algo
-- 関連: [../roadmap.md](../roadmap.md) / [../architecture.md](../architecture.md) / [adr-001-rf-frontend-low-if-adc.md](adr-001-rf-frontend-low-if-adc.md)
+- 関連: [../roadmap.md](../roadmap.md) / [../architecture.md](../architecture.md) / [adr-001(保留)](../future/adr/adr-001-rf-frontend-low-if-adc.md)
 
 ## コンテキスト
 
-1.6 で品質メトリクスの純粋関数(`src/algo/eval/metrics.py`: THD / SINAD / L-R セパレーション / PLL ロック時間)と CI ゲート(`make eval` = pytest)は整った。だが実際の復調パイプライン出力をそれに通して品質を判定する仕組みがない。roadmap で「方式の確立は 1.7 の定量評価に合格して初めて成立し、これが Phase 2/HDL の合格基準」と定めている以上、品質を「規律」ではなく「仕組み」で守る回帰ゲートが要る。
+1.6 で品質メトリクスの純粋関数(`src/algo/eval/metrics.py`: THD / SINAD / L-R セパレーション / PLL ロック時間)と CI ゲート(`make eval` = pytest)は整った。だが実際の復調パイプライン出力をそれに通して品質を判定する仕組みがない。roadmap で(当時)「方式の確立は 1.7 の定量評価に合格して初めて成立し、これが Phase 2/HDL の合格基準」と定めていた以上、品質を「規律」ではなく「仕組み」で守る回帰ゲートが要る。
 
 ゲートの作り方には判断点が複数ある:
 
@@ -59,8 +59,8 @@ baseline 更新タイミング: **改善を確認したときだけ手動で `ma
 
 ### 良い影響
 - 品質の床(回帰ゲート)と製品スペック到達(絶対しきい値)の両方を CI で自動化できる。`make eval` 経由で既存 CI に無改修で乗る。
-- ラチェット運用で「1.7 合格 = Sony 絶対ゲートが全て昇格しきった状態」と達成判定が測定可能になる(= 方式確立 = Phase 2/HDL 合格基準)。未達のギャップが毎 PR で可視化される。
-- メトリクス関数は algo↔hdl 共通のアクセプタンス・オラクル。同じ characterize 機構を後で HDL シミュ出力にも適用できる。
+- ラチェット運用で「1.7 合格 = Sony 絶対ゲートが全て昇格しきった状態」と達成判定が測定可能になる(= 方式確立)。未達のギャップが毎 PR で可視化される。
+- メトリクス関数は実装に依存しない純粋関数。将来 HDL へ移植する場合も、同じ characterize 機構をシミュレーション出力に適用してモデル↔実装のアクセプタンス・オラクルとして再利用できる(移植は保留中、[../future/](../future/README.md))。
 
 ### 受け入れるトレードオフ / 負の影響
 - 絶対ゲートは strict xfail のため、未達の間は「緑(xfail)」で表示され、見かけ上 pass と紛らわしい。ギャップは characterize の出力で確認する。
@@ -71,11 +71,11 @@ baseline 更新タイミング: **改善を確認したときだけ手動で `ma
 ### 将来への含み
 - SNR スイープ・多トーン・帯域端での評価は 1.7 完了後に拡張する。
 - 1.8(因果・ストリーミング参照モデル)や 75kHz 偏移検証も同じ characterize 機構の上に乗せられる。
-- HDL 実装時、同メトリクスで algo↔hdl を apples-to-apples 比較する(Phase 2 アクセプタンス)。
+- 将来の移植メモ: HDL へ移植する場合は、同メトリクスでモデル↔実装を apples-to-apples 比較する([../future/roadmap-hardware.md](../future/roadmap-hardware.md) 2.3)。
 
 ## 備考
 - 実装: `src/algo/eval/harness.py`(ドライバ)/ `characterize.py`(集計・baseline I/O)/ `tests/test_quality_gate.py`(ゲート)/ `settings.py`(条件・しきい値)/ `Makefile`(`characterize` ターゲット)。
-- メトリクス定義の正本は [adr 無し]・`src/algo/eval/metrics.py` と契約テスト `tests/test_metrics.py`。
+- メトリクス定義には専用の ADR を設けない。`src/algo/eval/metrics.py`(実装)と契約テスト `tests/test_metrics.py` を正本とする。
 
 ### 追記(2026-06-07): THD/SINAD の測定基準をモノラル経路へ
 当初 THD/SINAD はステレオ復調後の L チャンネルで測っていたが、サブキャリア検波の残差が
